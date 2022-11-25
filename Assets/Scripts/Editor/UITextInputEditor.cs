@@ -46,6 +46,10 @@ public class UITextInputEditor : Editor
 
                 CustomUIBase.Div(5);
 
+                CustomUIBase.Subtitle("Label", 15);
+
+                GUILayout.Space(5);
+
                 EditorGUILayout.PropertyField(soUiInput.FindProperty("hasLabel"));
                 useLabel = soUiInput.FindProperty("hasLabel").boolValue;
                 if (useLabel)
@@ -57,6 +61,11 @@ public class UITextInputEditor : Editor
                     }
                 }
                 GUILayout.Space(5);
+
+                CustomUIBase.Subtitle("Placeholder/Input", 15);
+
+                GUILayout.Space(5);
+
                 EditorGUILayout.PropertyField(soUiInput.FindProperty("placeholder"));
                 EditorGUILayout.PropertyField(soUiInput.FindProperty("placeholderDefault"));
                 placeholderChanged = placeholderDefault != soUiInput.FindProperty("placeholderDefault").stringValue ? true : false;
@@ -90,6 +99,8 @@ public class UITextInputEditor : Editor
                         EditorGUILayout.PropertyField(soUiInput.FindProperty("fontSize"), new GUIContent(""), GUILayout.Width(60));
                     }
                     EditorGUILayout.PropertyField(soUiInput.FindProperty("hasHighlight"));
+                    if(soUiInput.FindProperty("hasHighlight").boolValue)
+                        EditorGUILayout.PropertyField(soUiInput.FindProperty("highlight"));
                 }
             }
         }
@@ -98,6 +109,7 @@ public class UITextInputEditor : Editor
         {
             input.ChangeLabel(input.getLabel(), useLabel);
             if (placeholderChanged) placeholderDefault = input.ChangePlaceholder();
+            if (soUiInput.FindProperty("hasHighlight").boolValue) input.UpdateHighlight();
             input.ChangeFont();
         }
     }

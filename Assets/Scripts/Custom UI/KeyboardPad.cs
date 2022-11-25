@@ -60,11 +60,14 @@ public class KeyboardPad : UIButton, IPointerDownHandler, IPointerUpHandler, IPo
         await Task.Delay(250, m_TokenSource.Token);
         if(m_TokenSource.IsCancellationRequested) return;
 
+        if(numClicks > 1) { numClicks = 1; return; }
+
         if (Keyboard.holding) Function();
     }
 
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
     {
+        numClicks++;
         /*if (function == KeyboardFunction.Enter || function == KeyboardFunction.CapsLock)
             Function();*/
     }

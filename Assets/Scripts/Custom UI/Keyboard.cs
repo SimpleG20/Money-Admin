@@ -5,10 +5,11 @@ using UnityEngine;
 using TMPro;
 using System.Threading.Tasks;
 using System.Threading;
+using static Enums;
 
 public class Keyboard : UIElement
 {
-    public static bool holding;
+    public static bool holding, waitingInput;
     private static bool toUpper = false;
     private static TypeInputValue typeInput;
 
@@ -100,9 +101,7 @@ public class Keyboard : UIElement
         StringBuilder builder = new StringBuilder(inputField.inputText.text);
         if (builder.ToString().Length - 1 >= 0 && builder.ToString() != "...")
         {
-            if (builder.ToString().Contains("_")) builder.Remove(builder.Length - 2, 2);
-            else builder.Remove(builder.Length - 1, 1);
-
+            builder.Remove(builder.Length - 1, 1);
             SetInputValue(builder.ToString());
         }
 
@@ -120,26 +119,16 @@ public class Keyboard : UIElement
     {
         if (inputField == null) return;
         if (inputField.inputText.text == "...") inputField.inputText.text = "";
+        
+        waitingInput = false;
+        LeanTween.cancel(inputField.gameObject);
 
         StringBuilder builder = new StringBuilder(inputField.inputText.text);
-        if (builder.ToString().Contains("_")) builder.Remove(builder.Length - 1, 1);
-
         s = (toUpper && typeInput == TypeInputValue.String) ? s.ToUpper() : s;
         if(InputTextLimit(builder.ToString(), s)) builder.Append(s);
 
         inputField.ChangingInputsTexts(builder.ToString());
         SetInputValue(builder.ToString());
-        //inputField.inputText.text = builder.ToString();
-
-        /*if (holding) return;
-        else
-        {
-            s = "_";
-            if (InputTextLimit(builder.ToString(), s)) builder.Append(s);
-            inputField.inputText.text = builder.ToString();
-
-            
-        }*/
     }
     private void SetInputValue(string s)
     {
@@ -147,7 +136,6 @@ public class Keyboard : UIElement
         while (builder.ToString().Contains("_")) builder.Remove(builder.Length - 1, 1);
 
         s = builder.ToString();
-        print(s);
         switch(typeInput)
         {
             case TypeInputValue.String:

@@ -6,8 +6,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-
-public enum TypeInputValue { Int, Float, String }
+using static Enums;
+using static System.Net.Mime.MediaTypeNames;
 
 [RequireComponent(typeof(CanvasGroup), typeof(Animator))]
 public class UITextInput : UIElement, IPointerClickHandler
@@ -29,7 +29,7 @@ public class UITextInput : UIElement, IPointerClickHandler
 
     private InputValue inputValue;
     private GameObject leaveButton;
-    private GameObject highlight;
+    [SerializeField] protected GameObject highlight;
 
     private IEnumerator Start()
     {
@@ -55,7 +55,7 @@ public class UITextInput : UIElement, IPointerClickHandler
 
         if (hasHighlight)
         {
-            highlight = inputText.transform.GetChild(0).gameObject;
+            highlight = transform.GetChild(0).GetChild(2).GetChild(0).gameObject;
             highlight.gameObject.SetActive(false);
         }
 
@@ -99,30 +99,17 @@ public class UITextInput : UIElement, IPointerClickHandler
     }
     public void WaitingInput()
     {
-        if (waitingInput) return;
+        if (Keyboard.waitingInput) return;
 
         inputGhost.gameObject.SetActive(false);
-        waitingInput = true;
+        Keyboard.waitingInput = true;
 
         var waiting = inputText.text;
         if (waiting == "") waiting = "...";
 
         inputText.text = waiting;
-        inputText.LoopStringFading(waiting);
-        /*LeanTween.value(inputText.gameObject, 0, 1, 0.6f).setLoopPingPong().setOnUpdate((value) =>
-        {
-            var color = inputText.color;
-            if (inputText.text != waiting || Keyboard.leave) 
-            {
-                color.a = 1;
-                inputText.color = color;
-                waitingInput = false;
-                LeanTween.cancel(inputText.gameObject); 
-                return; 
-            }
-            color.a = value;
-            inputText.color = color;
-        });*/
+        inputText.transform.parent.GetComponent<HorizontalLayoutGroup>().padding = new RectOffset(0, 0, 0, 0);
+        WaitingFading();
     }
     private void DisplayKeyboard()
     {
@@ -220,6 +207,23 @@ public class UITextInput : UIElement, IPointerClickHandler
 
         placeholder.text = placeholderString = builder.ToString();
     }
+    private void WaitingFading()
+    {
+        LeanTween.cancel(inputText.gameObject);
+        LeanTween.value(inputText.gameObject, 0, 1, 0.6f).setLoopPingPong().setOnUpdate((value) =>
+        {
+            var color = inputText.color;
+            if (!Keyboard.waitingInput || Keyboard.leave)
+            {
+                color.a = 1;
+                inputText.color = color;
+                LeanTween.cancel(inputText.gameObject);
+                return;
+            }
+            color.a = value;
+            inputText.color = color;
+        });
+    }
     private void InputShowingSituation(bool value)
     {
         inputText.gameObject.SetActive(value);
@@ -232,17 +236,23 @@ public class UITextInput : UIElement, IPointerClickHandler
         {
             inputGhost.gameObject.SetActive(true);
             inputGhost.fontSizeMax = inputText.fontSize;
-            inputGhost.LoopStringFading(inputGhost.text);
+            inputGhost.LoopStringFading();
+            inputText.transform.GetComponentInParent<HorizontalLayoutGroup>().padding = new RectOffset(30, 52, 0, 0);
         }
         else
         {
             LeanTween.cancel(inputGhost.gameObject);
             inputGhost.gameObject.SetActive(false);
+            inputText.transform.GetComponentInParent<HorizontalLayoutGroup>().padding = new RectOffset(0, 0, 0, 0);
         }
     }
     #endregion
 
     #region ContextMenu
+    public void UpdateHighlight()
+    {
+        highlight = transform.GetChild(0).GetChild(2).GetChild(0).gameObject;
+    }
     public void ChangeFont()
     {
         if (inputText == null) inputText = transform.GetChild(0).GetChild(2).GetComponent<TextMeshProUGUI>();

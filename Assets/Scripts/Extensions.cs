@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Text;
 using System.Threading.Tasks;
-using TMPro;
+using System.Text;
 using UnityEngine;
+using TMPro;
+using static Enums;
 
 public static class Extensions 
 {
@@ -74,19 +74,12 @@ public static class Extensions
 
         return true;
     }
-    public static void LoopStringFading(this TextMeshProUGUI text, string waiting)
+    public static void LoopStringFading(this TextMeshProUGUI text)
     {
         LeanTween.cancel(text.gameObject);
         LeanTween.value(text.gameObject, 0, 1, 0.6f).setLoopPingPong().setOnUpdate((value) =>
         {
             var color = text.color;
-            if (text.text != waiting || Keyboard.leave)
-            {
-                color.a = 1;
-                text.color = color;
-                LeanTween.cancel(text.gameObject);
-                return;
-            }
             color.a = value;
             text.color = color;
         });
