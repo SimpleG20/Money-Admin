@@ -1,0 +1,27 @@
+fileFormatVersion: 2
+guid: efc01df4c3c8bd64099c0c11101f29f6
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Sans Mateo 2
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: b5e9ce59852c2454284303d120e2dc13, type: 3}
+  - {fileID: 12800000, guid: 3ad8a160904ccff4eac81114aec5e9b9, type: 3}
+  - {fileID: 12800000, guid: 248f400c47c1c784aa4fb6dfd50ac487, type: 3}
+  - {fileID: 12800000, guid: 657ac7b7e2e36c74593d0a7ab4f03c76, type: 3}
+  - {fileID: 12800000, guid: cddb26aa03bc50448a82dc6528eaa570, type: 3}
+  - {fileID: 12800000, guid: beeb5fc69b9038f4dad2a60c239e10a7, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
