@@ -4,10 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 
 [Serializable]
 public class PageButton : AbstractButton
 {
+    public int maxPages;
     private int _currentPage;
     public int currentPage
     {
@@ -21,13 +23,13 @@ public class PageButton : AbstractButton
                 objectRef.gameObject.SetActive(true);
         }
     }
-    public int maxPages;
     public bool multiplePages = true;
 
     [SerializeField][Range(-1, 1)] protected int direction;
     [SerializeField] protected List<GameObject> pages;
 
     [SerializeField] protected TextMeshProUGUI title;
+    [SerializeField] protected UnityEvent clickEvent;
 
     private PageButton other;
     private CancellationTokenSource tokenSource;
@@ -37,6 +39,7 @@ public class PageButton : AbstractButton
         obj.TryGetComponent(out manager);
         objectRef = obj;
         currentPage = 0;
+        maxPages = multiplePages ? pages.Count - 1 : 0; 
 
         other = manager.linkedObjects[0].GetComponent<UIType>().getPageParams();
         tokenSource = new CancellationTokenSource();
@@ -57,18 +60,10 @@ public class PageButton : AbstractButton
         other.currentPage = currentPage;
 
         pages[currentPage].GetComponent<UIElement>().ShowUi();
-
-        if (manager.linkedObjects.Count == currentPage + 1 && direction == 1) { Disable(); other.Enable(); }
-        else if (currentPage == 0 && direction == -1) { Disable(); other.Enable(); }
-        else
-        {
-            Enable();
-            other.Enable();
-        }
     }
     private void SinglePage()
     {
-
+        clickEvent.Invoke();
     }
 
 

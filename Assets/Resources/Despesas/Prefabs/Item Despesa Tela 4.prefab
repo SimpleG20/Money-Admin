@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8900982420353311205}
   - component: {fileID: 8900982420353311204}
   - component: {fileID: 8900982420353311207}
+  - component: {fileID: 4330325655514367950}
   m_Layer: 5
   m_Name: Item Despesa Tela 4
   m_TagString: Untagged
@@ -98,6 +99,21 @@ MonoBehaviour:
   m_EffectColor: {r: 1, g: 0.3019608, b: 0.3019608, a: 0.5019608}
   m_EffectDistance: {x: 10, y: -10}
   m_UseGraphicAlpha: 1
+--- !u!114 &4330325655514367950
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8900982420353311201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54b620b5906c28d4eb1557aecd563cdb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nameTxt: {fileID: 8900982421087553173}
+  valueTxt: {fileID: 8900982421598462916}
+  parcelsTxt: {fileID: 8900982420356509570}
 --- !u!1 &8900982420356509599
 GameObject:
   m_ObjectHideFlags: 0
@@ -547,7 +563,6 @@ GameObject:
   - component: {fileID: 8900982421211164310}
   - component: {fileID: 8900982421211164305}
   - component: {fileID: 8900982421211164308}
-  - component: {fileID: 8900982421211164311}
   - component: {fileID: 8900982421211164309}
   m_Layer: 5
   m_Name: Bt More
@@ -623,88 +638,58 @@ MonoBehaviour:
   m_GameObject: {fileID: 8900982421211164307}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b24378163fb8975478e5da8297af4791, type: 3}
+  m_Script: {fileID: 11500000, guid: 2a0ff671854cfff4bb5a2bff409a4cc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   labelComponent: {fileID: 0}
   hasLabel: 0
   labelText: 
-  scaleSize: 1.05
+  scaleSize: 1.1
   selected: 0
   scale: 1
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
-  showVariables: 1
   linkedObjects: []
-  family: 0
-  typeUi: 0
-  highlightSource: {fileID: 0}
-  rippleSource: {fileID: 0}
+  showVariables: 0
   toggle: 0
   useRipple: 0
   temporarilyHighlight: 0
+  highlightSource: {fileID: 0}
+  rippleSource: {fileID: 0}
+  typeUi: 0
   destinationBtParams:
-    target: 0
     managment: {fileID: 0}
+    target: 0
   pageBtParams:
-    currentPage: 0
+    maxPages: 0
     multiplePages: 1
     direction: 0
-    other: {fileID: 0}
+    pages: []
     title: {fileID: 0}
+    clickEvent:
+      m_PersistentCalls:
+        m_Calls: []
   holdBtParams:
     released: 0
     type: 0
     max: 0
     min: 0
-  typingBtParams:
-    function: 0
-    textToWrite: 
---- !u!114 &8900982421211164311
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8900982421211164307}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 0
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 8900982421211164305}
-  m_OnClick:
+  clickEvent:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4330325655514367950}
+        m_TargetAssemblyTypeName: StoreItemData, Assembly-CSharp
+        m_MethodName: ShowExtraInfo
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!225 &8900982421211164309
 CanvasGroup:
   m_ObjectHideFlags: 0

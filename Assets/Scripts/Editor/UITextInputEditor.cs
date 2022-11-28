@@ -21,14 +21,14 @@ public class UITextInputEditor : Editor
         soUiInput = serializedObject;
         propLabel = soUiInput.FindProperty("labelText");
         input = (UITextInput)target;
-        input.showLabel();
+        input.ShowLabelFromEditor();
     }
 
     public override void OnInspectorGUI()
     {
         input = (UITextInput)target;
 
-        CustomUIBase.Title("Input Text by ASGD");
+        CustomUIBase.Title("Input Text by ASGD", Resources.Load<Font>("Fonts/Sans Mateo 2 Semi Bold"));
 
         serializedObject.Update();
 
@@ -40,15 +40,8 @@ public class UITextInputEditor : Editor
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 EditorGUILayout.PropertyField(soUiInput.FindProperty("type"));
-                EditorGUILayout.PropertyField(soUiInput.FindProperty("_interactable"));
-
-                CustomUIBase.ScalePart(soUiInput);
 
                 CustomUIBase.Div(5);
-
-                CustomUIBase.Subtitle("Label", 15);
-
-                GUILayout.Space(5);
 
                 EditorGUILayout.PropertyField(soUiInput.FindProperty("hasLabel"));
                 useLabel = soUiInput.FindProperty("hasLabel").boolValue;
@@ -60,20 +53,6 @@ public class UITextInputEditor : Editor
                         EditorGUILayout.PropertyField(soUiInput.FindProperty("labelFont"));
                     }
                 }
-                GUILayout.Space(5);
-
-                CustomUIBase.Subtitle("Placeholder/Input", 15);
-
-                GUILayout.Space(5);
-
-                EditorGUILayout.PropertyField(soUiInput.FindProperty("placeholder"));
-                EditorGUILayout.PropertyField(soUiInput.FindProperty("placeholderDefault"));
-                placeholderChanged = placeholderDefault != soUiInput.FindProperty("placeholderDefault").stringValue ? true : false;
-                EditorGUILayout.PropertyField(soUiInput.FindProperty("inputText"));
-                EditorGUILayout.PropertyField(soUiInput.FindProperty("inputGhost"));
-                GUILayout.Space(5);
-
-                CustomUIBase.Div(5);
 
                 var styleList = new GUIStyle();
                 styleList.padding = new RectOffset(15, 5, 0, 0);
@@ -81,6 +60,7 @@ public class UITextInputEditor : Editor
                 {
                     EditorGUILayout.PropertyField(soUiInput.FindProperty("linkedObjects"));
                 }
+                GUILayout.Space(5);
             }
 
             input.showVariables = CustomUIBase.Foldout("Variables", input.showVariables, 17, TextAnchor.MiddleCenter);
@@ -89,28 +69,42 @@ public class UITextInputEditor : Editor
             {
                 using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
                 {
-                    
-                    EditorGUILayout.PropertyField(soUiInput.FindProperty("prefix"));
+                    EditorGUILayout.PropertyField(soUiInput.FindProperty("_interactable"));
 
-                    using (new EditorGUILayout.HorizontalScope())
-                    {
-                        EditorGUILayout.PropertyField(soUiInput.FindProperty("font"));
-                        var temp = fontSize;
-                        EditorGUILayout.PropertyField(soUiInput.FindProperty("fontSize"), new GUIContent(""), GUILayout.Width(60));
-                    }
+                    CustomUIBase.ScalePart(soUiInput);
+
                     EditorGUILayout.PropertyField(soUiInput.FindProperty("hasHighlight"));
                     if(soUiInput.FindProperty("hasHighlight").boolValue)
                         EditorGUILayout.PropertyField(soUiInput.FindProperty("highlight"));
+
+                    CustomUIBase.Subtitle("Placeholder / Input", 14);
+
+                    EditorGUILayout.PropertyField(soUiInput.FindProperty("placeholder"));
+                    EditorGUILayout.PropertyField(soUiInput.FindProperty("inputText"));
+                    EditorGUILayout.PropertyField(soUiInput.FindProperty("inputGhost"));
+
+                    CustomUIBase.Div(5);
+
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        EditorGUILayout.PropertyField(soUiInput.FindProperty("fontInput"));
+                        var temp = fontSize;
+                        EditorGUILayout.PropertyField(soUiInput.FindProperty("fontSize"), new GUIContent(""), GUILayout.Width(60));
+                    }
+
+                    EditorGUILayout.PropertyField(soUiInput.FindProperty("placeholderDefault"));
+                    placeholderChanged = placeholderDefault != soUiInput.FindProperty("placeholderDefault").stringValue ? true : false;
+                    EditorGUILayout.PropertyField(soUiInput.FindProperty("prefix"));
                 }
             }
         }
 
         if (serializedObject.ApplyModifiedProperties())
         {
-            input.ChangeLabel(input.getLabel(), useLabel);
-            if (placeholderChanged) placeholderDefault = input.ChangePlaceholder();
-            if (soUiInput.FindProperty("hasHighlight").boolValue) input.UpdateHighlight();
-            input.ChangeFont();
+            input.ChangeLabelFromEditor(input.getLabel(), useLabel);
+            if (placeholderChanged) placeholderDefault = input.SetPlaceholderFromEditor();
+            if (soUiInput.FindProperty("hasHighlight").boolValue) input.SetHighlightFromEditor();
+            input.ChangeFontFromEditor();
         }
     }
 }

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using TMPro;
-using System.Threading.Tasks;
-using System.Threading;
 using static Enums;
 
 public class Keyboard : UIElement
@@ -31,14 +29,6 @@ public class Keyboard : UIElement
             if (_instance == null) _instance = GameObject.Find("Teclado").GetComponent<Keyboard>();
             return _instance;
         }
-    }
-
-    private CancellationTokenSource tokenSource;
-
-    public override void Init()
-    {
-        base.Init();
-        tokenSource = new CancellationTokenSource();
     }
 
     public bool ShowKeyboard(TypeInputValue type, UITextInput _input, InputValue _inputValue, List<GameObject> elements)
@@ -98,7 +88,7 @@ public class Keyboard : UIElement
     }
     public void Backspace(string s)
     {
-        StringBuilder builder = new StringBuilder(inputField.inputText.text);
+        StringBuilder builder = new StringBuilder(inputField.getInputString());
         if (builder.ToString().Length - 1 >= 0 && builder.ToString() != "...")
         {
             builder.Remove(builder.Length - 1, 1);
@@ -107,8 +97,8 @@ public class Keyboard : UIElement
 
         if (builder.ToString() == "" || builder.ToString() == "...")
         {
-            inputField.inputGhost.gameObject.SetActive(false);
-            inputField.inputText.text = "...";
+            inputField.getInputGhostOB().SetActive(false);
+            inputField.setInputText("...");
             inputField.WaitingInput();
             return;
         }
@@ -118,15 +108,17 @@ public class Keyboard : UIElement
     public void Typing(string s)
     {
         if (inputField == null) return;
-        if (inputField.inputText.text == "...") inputField.inputText.text = "";
+        if (inputField.getInputString() == "...") inputField.setInputText("");
         
         waitingInput = false;
         LeanTween.cancel(inputField.gameObject);
 
-        StringBuilder builder = new StringBuilder(inputField.inputText.text);
+        StringBuilder builder = new StringBuilder(inputField.getInputString());
+        
         s = (toUpper && typeInput == TypeInputValue.String) ? s.ToUpper() : s;
         if(InputTextLimit(builder.ToString(), s)) builder.Append(s);
 
+        //print(builder.ToString());
         inputField.ChangingInputsTexts(builder.ToString());
         SetInputValue(builder.ToString());
     }
@@ -140,15 +132,15 @@ public class Keyboard : UIElement
         {
             case TypeInputValue.String:
                 inputValue.stringValue = s;
-                print(inputValue.stringValue);
+                //print(inputValue.stringValue);
                 return;
             case TypeInputValue.Int:
                 int.TryParse(s, out inputValue.intValue);
-                print(inputValue.intValue);
+                //print(inputValue.intValue);
                 return;
             case TypeInputValue.Float:
                 float.TryParse(s, out inputValue.floatValue);
-                print(inputValue.floatValue);
+                //print(inputValue.floatValue);
                 return;
         }
     }
@@ -161,12 +153,20 @@ public class Keyboard : UIElement
         {
             if (length - input.IndexOf(",") >= 3) return false;
             if (toAppend == "," && typeInput == TypeInputValue.Float) return false;
+            if (typeInput == TypeInputValue.Int) return false;
         }
         else
         {
-            if (typeInput == TypeInputValue.Int) return false;
+            if(typeInput == TypeInputValue.String)
+            {
+                if (length > 30) return false;
+            }
+            else
+            {
+                if (length > 10 && typeInput == TypeInputValue.Int) return false;
+                if (length > 12 && typeInput == TypeInputValue.Float) return false;
+            }
         }
-
         return true;
     }
 
@@ -174,7 +174,7 @@ public class Keyboard : UIElement
     [ContextMenu("Show Letters")]
     void ShowLetters()
     {
-        foreach(UIButton ui in letters) ui.ChangeLabel();
-        foreach (UIButton ui in numbers) ui.ChangeLabel();
+        foreach(UIButton ui in letters) ui.ChangeLabelFromEditor();
+        foreach (UIButton ui in numbers) ui.ChangeLabelFromEditor();
     }
 }

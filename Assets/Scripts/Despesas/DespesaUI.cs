@@ -1,73 +1,149 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Linq;
 using UnityEngine.UI;
+using UnityEngine;
 using TMPro;
-using System;
-using static UnityEditor.PlayerSettings;
+using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 public class DespesaUI : MonoBehaviour
 {
-    private static DespesaUI _current;
-    public static DespesaUI current
-    {
-        get {
-            if (_current == null) _current = FindObjectOfType<DespesaUI>();
-            return _current;
-        } 
-    }
-
-    private Dictionary<int, string> Months = new Dictionary<int, string> { { 1, "Janeiro" },    { 2, "Fevereiro" }, { 3, "Março" },
+    #region Aux Variables
+    private readonly Dictionary<int, string> Months = new Dictionary<int, string> { { 1, "Janeiro" },    { 2, "Fevereiro" }, { 3, "Março" },
                                                                            { 4, "Abril"},       { 5, "Maio"},       { 6, "Junho"},
                                                                            { 7, "Julho"},       { 8, "Agosto"},     { 9, "Setembro"},
                                                                            { 10, "Outubro"},    { 11, "Novembro"},  {12, "Dezembro" } };
+    private readonly Dictionary<int, string> MonthsAbv = new Dictionary<int, string> { { 1, "JAN" },      { 2, "FEV" },       { 3, "MAR" },
+                                                                             { 4, "ABR"},       { 5, "MAI"},        { 6, "JUN"},
+                                                                             { 7, "JUL"},       { 8, "AGO"},        { 9, "SET"},
+                                                                             { 10, "OUT"},      { 11, "NOV"},       {12, "DEZ" } };
 
-    int currentMonth = 1, monthsAvailables;
+    int monthsAvailables;
     bool edited;
 
+    private float limit
+    {
+        get => inputLimit.getInputValue().floatValue;
+        set => inputLimit.setPlaceholder(value.ToString());
+    }
+    private float income
+    {
+        get => inputIncome.getInputValue().floatValue;
+        set => inputIncome.setPlaceholder(value.ToString());
+    }
+    private float stored
+    {
+        get => inputStored.getInputValue().floatValue;
+        set => inputStored.setPlaceholder(value.ToString());
+    }
+    private float fees
+    {
+        get => inputFees.getInputValue().floatValue;
+        set => inputFees.setPlaceholder(value.ToString());
+    }
+    private string nameItem
+    {
+        get => creation_inputName.getInputValue().stringValue;
+        set => creation_inputName.setPlaceholder(value.ToString());
+    }
+    private float priceItem
+    {
+        get => creation_inputPrice.getInputValue().floatValue; 
+        set => creation_inputPrice.setPlaceholder(value.ToString());
+    }
+    private int parcelsItem
+    {
+        get => creation_inputParcels.getInputValue().intValue; 
+        set => creation_inputParcels.setPlaceholder(value.ToString());
+    }
+    private int initMonthItem
+    {
+        get => creation_tgInitMonth.PositionOfTheOnlyActived() + 1;
+        set => creation_tgInitMonth[value].isOn = true;
+    }
+    private bool isMonthlyItem
+    {
+        get => creation_tgIsMonthly.isOn;
+        set => creation_tgIsMonthly.isOn = value;
+    }
+    private bool showMonthlyPrice
+    {
+        get => creation_tgMonthlyPrice.isOn;
+        set => creation_tgMonthlyPrice.isOn = true;
+    }
+    private bool testItem
+    {
+        get => creation_tgTest.isOn;
+        set => creation_tgTest.isOn = value;
+    }
+    private int typeItem
+    {
+        get => creation_dpTypeItem.value;
+        set => creation_dpTypeItem.value = value;
+    }
+    private int typeExpenseItem
+    {
+        get => creation_dpTypeExpense.value;
+        set => creation_dpTypeExpense.value = value;
+    }
+    #endregion
+
+    #region UI and some variables
+
+    [Header("Creation Part")]
+    #region
     public UITextInput                                              inputLimit;
     public UITextInput                                              inputIncome;
     public UITextInput                                              inputStored;
     public UITextInput                                              inputFees;
     [SerializeField] TextMeshProUGUI                                totalExpenseTxt, totalSavedTxt;
+    #endregion
 
     [Header("Creation Part")]
+    #region
+    [SerializeField] TextMeshProUGUI                                creation_limitText;
     [SerializeField] GameObject                                     creation_warningAdded;
     [SerializeField] UITextInput                                    creation_inputName;
     [SerializeField] UITextInput                                    creation_inputPrice, creation_inputParcels;
+    [SerializeField] TMP_Dropdown                                   creation_dpTypeExpense, creation_dpTypeItem;
     [SerializeField] Toggle                                         creation_tgIsMonthly, creation_tgTest, creation_tgMonthlyPrice;
     [SerializeField] List<Toggle>                                   creation_tgInitMonth;
-    [SerializeField] TMP_Dropdown                                   creation_dpTypeExpense, creation_dpTypeItem;
-    [SerializeField] TextMeshProUGUI                                creation_limitText;
+    #endregion
 
-    [Header("Item")]
+    [Header("Items")]
+    #region
     [SerializeField] GameObject                                     obj_extraInfo;
-    private GameObject                                              obj_itemToEdit;
-
-
     [SerializeField] GameObject                                     Prefab_item, Prefab_reportGasto, Prefab_reportExtra;
     [SerializeField] Transform                                      parentItems, parentReports;
+    private GameObject                                              obj_itemToEdit;
+    #endregion
 
     [Header("Relatorio")]
+    #region
     [SerializeField] ScrollRect                                     scrollRect;
     [SerializeField] TextMeshProUGUI                                monthText, monthlyCost, monthlySaved;
-    [SerializeField] PageButton                                     setaProx, setaAnt;
+    [SerializeField] UIType                                         setaProx, setaAnt;
     private int                                                     paginaRelatorio = 0, reportMonth, reportYear;
+    #endregion
 
+    #endregion
 
-    [Header("Variaveis input")]
-    int mesComeca;
-    int parcelas;
-    float valorMensal;
-    bool DespesaCartao;
-    bool podeCancelar;
-    string nome;
-    Item.Tipo tipo;
+    public static DespesaUI current;
+
+    private void Awake()
+    {
+        current = this;
+    }
+
+    private void Start()
+    {
+        Initialize();
+    }
 
     public void Initialize()
-    {
+    { 
         var currentMonth = DateTime.Now.Month;
-        this.currentMonth = currentMonth;
         reportMonth = currentMonth;
         reportYear = DateTime.Now.Year;
         Despesa.current.setCurrentMonth(currentMonth);
@@ -75,83 +151,89 @@ public class DespesaUI : MonoBehaviour
         creation_tgInitMonth[currentMonth - 1].isOn = true;
 
         paginaRelatorio = 0;
+        reportMonth = 0;
+        reportYear = DateTime.Now.Year;
     }
 
+    #region Function for Input
     public void InicializarInputs()
     {
         inputLimit.setPlaceholderUpdated(Despesa.current.getLimit().ToString());
         inputIncome.setPlaceholderUpdated(Despesa.current.getIncomePerMonth().ToString());
         inputStored.setPlaceholderUpdated(Despesa.current.getInitialMoney().ToString());
     }
+    private void UpdateInputsText(Item dados)
+    {
+        nameItem = dados.getName();
+        parcelsItem = dados.getParcels();
+
+        if (dados.getShowMonthlyPrice()) priceItem = dados.getMonthlyPrice();
+        else priceItem = dados.getTotalPrice();
+
+        typeExpenseItem = dados.getUseCreditCard() ? 0 : 1;
+        typeItem = ((int)dados.getType());
+        isMonthlyItem = dados.getIsMonthly();
+        initMonthItem = dados.getInitMonth() - 1;
+
+        creation_limitText.text = $"R$ {Despesa.current.getCurrentLimit()}";
+        creation_limitText.CheckCommaSituation();
+    }
+    private void ResetInputValues()
+    {
+        creation_inputName.Default();
+        creation_inputParcels.Default();
+        creation_inputPrice.Default();
+
+        typeExpenseItem = 0;
+        typeItem = 0;
+
+        isMonthlyItem = false;
+        testItem = true;
+        initMonthItem = Despesa.current.getCurrentMonth() - 1;
+    }
     public void DropDown()
     {
-        if (creation_dpTypeItem.value == 1)
+        if (typeItem == 1)
         {
-            creation_dpTypeExpense.value = 1;
+            typeExpenseItem = 1;
             creation_dpTypeExpense.interactable = false;
         }
         else creation_dpTypeExpense.interactable = true;
     }
+    #endregion
 
+    #region Item
 
-    public void CriacaoItem()
+    #region Creation
+    public void CreationItem()
     {
-        PegarInputs();
-
-        if (!podeCancelar) valorMensal /= parcelas;
-
-        if (parcelas * valorMensal > Despesa.current.getCurrentLimit() && podeCancelar == false && DespesaCartao && tipo == Item.Tipo.DESPESA)
-        { print("COMPRA INDISPONIVEL! LIMITE ESTOURADO"); return; }
-
-        Item item = CriarItem();
-        Despesa.current.ItemsList.Add(item);
+        Item item = CreateItem();
+        if(item == null)
+        {
+            print("COMPRA INDISPONIVEL! LIMITE ESTOURADO"); 
+            return;
+        }
+        Despesa.current.AddToList(item);
 
         LeanTween.moveLocalY(creation_warningAdded, -50, 1.5f).setLoopPingPong(1).setOnComplete(() => LeanTween.cancel(creation_warningAdded));
-        ResetarInputs();
+        ResetInputValues();
     }
-
-    private Item CriarItem()
+    private Item CreateItem()
     {
-        float price = creation_inputPrice.getInputValue().floatValue * creation_inputParcels.getInputValue().floatValue;
-        if (price > Despesa.current.getCurrentLimit())
+        Item item = new Item(nameItem, typeItem, testItem, showMonthlyPrice, isMonthlyItem, typeExpenseItem, priceItem, parcelsItem, initMonthItem);
+        item.DiscountInCurrentLimit();
+
+        if (!item.getIsTest())
         {
-            //show warning
-            return null;
+            Despesa.current.listaSalvos.AdicionarLista(Despesa.current.listaSalvos, item);
+            Salvar.SalvarDados(Despesa.current.listaSalvos);
         }
-
-        Item item = ScriptableObject.CreateInstance<Item>();
-        item.name = nome;
-        item.nome = nome;
-        item.tipo = tipo;
-        item.parcelas = parcelas;
-        if (mesComeca < Despesa.current.getCurrentMonth()) item.mesComeca = Despesa.current.getCurrentMonth() + (12 - Despesa.current.getCurrentMonth()) + mesComeca;
-        else item.mesComeca = mesComeca;
-
-        item.valorTotal = price;
-        item.valorMensal = valorMensal;
-        item.cartao = DespesaCartao;
-        item.mensal = podeCancelar;
-        item.name = item.nome;
-
-        if (podeCancelar == false && DespesaCartao && tipo == Item.Tipo.DESPESA) { Despesa.current.DecreaseLimit(valorMensal * parcelas); } //AtualizarLimite(); }
-
-        Despesa.current.listaSalvos.AdicionarLista(Despesa.current.listaSalvos, item); 
-        Salvar.SalvarDados(Despesa.current.listaSalvos);
 
         return item;
     }
-    private void PegarInputs()
-    {
-        nome = creation_inputName.getInputValue().stringValue;
-        valorMensal = creation_inputPrice.getInputValue().floatValue;
-        parcelas = creation_inputParcels.getInputValue().intValue;
-        mesComeca = currentMonth;
+    #endregion
 
-        tipo = creation_dpTypeItem.value == 0 ? Item.Tipo.DESPESA : Item.Tipo.EXTRA;
-        DespesaCartao = creation_dpTypeExpense.value == 0 ? true : false;
-        podeCancelar = creation_tgIsMonthly.isOn ? true : false;
-    }
-
+    #region Edition
     public void EditarItem(bool b)
     {
         obj_itemToEdit.SetActive(b);
@@ -162,82 +244,37 @@ public class DespesaUI : MonoBehaviour
             if (!edited)
             {
                 Item dados = Despesa.current.editar.GetComponent<ItemDados>().dados;
-                if (dados.mensal == false && dados.cartao && dados.tipo == Item.Tipo.DESPESA) Despesa.current.DecreaseLimit(dados.valorMensal * dados.parcelas);
+                dados.DiscountInCurrentLimit();
                 //AtualizarLimite();
             }
-            ResetarInputs();
+            ResetInputValues();
         }
         else
         {
             GameObject.Find("Item_txt").GetComponent<TextMeshProUGUI>().text = "";
             Item dados = Despesa.current.editar.GetComponent<ItemDados>().dados;
             
+            dados.RemoveFromLimit();
             UpdateInputsText(dados);
-
-            if (dados.mensal == false && dados.cartao && dados.tipo == Item.Tipo.DESPESA) Despesa.current.IncreaseLimit(dados.valorMensal * dados.parcelas);
             //AtualizarLimite();
         }
     }
-
-    private void UpdateInputsText(Item dados)
-    {
-        creation_inputName.placeholder.text = dados.nome;
-        creation_inputParcels.placeholder.text = dados.parcelas.ToString();
-        if (!dados.mensal && dados.cartao) creation_inputPrice.placeholder.text = (dados.valorMensal * dados.parcelas).ToString();
-        else creation_inputPrice.placeholder.text = dados.valorMensal.ToString();
-        creation_dpTypeExpense.value = dados.cartao ? 0 : 1;
-        creation_dpTypeItem.value = ((int)dados.tipo);
-        creation_tgIsMonthly.isOn = dados.mensal;
-        creation_tgInitMonth[dados.mesComeca - 1].isOn = true;
-    }
-
     public void AplicarEdicaoItem()
     {
-        PegarInputs();
+        Item item = CreateItem();
+        if (item == null)
+        {
+            print("COMPRA INDISPONIVEL! LIMITE ESTOURADO");
+            return;
+        }
+        Despesa.current.AddToList(item);
 
-        if (!podeCancelar) valorMensal /= parcelas;
+        LeanTween.moveLocalY(creation_warningAdded, -50, 1.5f).setLoopPingPong(1).setOnComplete(() => LeanTween.cancel(creation_warningAdded));
 
-        if (parcelas * valorMensal > Despesa.current.getCurrentLimit() && podeCancelar == false && DespesaCartao && tipo == Item.Tipo.DESPESA)
-        { print("EDICAO INDISPONIVEL! LIMITE ESTOURADO"); return; }
-
-        /*---------------------------------------------------------------------------------*/
-        Item dados = Despesa.current.editar.GetComponent<ItemDados>().dados;
-
-        dados.nome = nome;
-        dados.valorMensal = valorMensal;
-        dados.parcelas = parcelas;
-        if (mesComeca < Despesa.current.getCurrentMonth()) dados.mesComeca = Despesa.current.getCurrentMonth() + (12 - Despesa.current.getCurrentMonth()) + mesComeca;
-        else dados.mesComeca = mesComeca;
-        dados.tipo = tipo;
-        dados.cartao = DespesaCartao;
-        dados.mensal = podeCancelar;
-
-        Despesa.current.listaSalvos.AdicionarLista(Despesa.current.listaSalvos, dados); Salvar.SalvarDados(Despesa.current.listaSalvos);
-
-        if (!dados.mensal && dados.cartao && dados.tipo == Item.Tipo.DESPESA) Despesa.current.DecreaseLimit(dados.valorMensal * dados.parcelas);
-
-        Despesa.current.editar.GetComponent<ItemDados>().dados = dados;
+        Despesa.current.editar.GetComponent<ItemDados>().dados = item;
         Despesa.current.editar.GetComponent<ItemDados>().Setar();
         //AtualizarLimite();
         edited = true;
-    }
-    public void SairEdicao()
-    {
-        Despesa.current.editar = null;
-    }
-
-
-    public void InstantiateSavedItens()
-    {
-        parentItems.DeleteChildren();
-
-        foreach (Item i in Despesa.current.ItemsList)
-        {
-            var item = Instantiate(Prefab_item, parentItems);
-            item.name = i.nome;
-            Despesa.current.UpdateLimitValue(i.valorMensal * i.parcelas);
-            item.GetComponent<ItemDados>().dados = i;
-        }
     }
     public void EditarSalvos(bool b)
     {
@@ -249,74 +286,91 @@ public class DespesaUI : MonoBehaviour
             Item dados = Despesa.current.editar.GetComponent<ItemDados>().dados;
             
             UpdateInputsText(dados);
-            /*nome_input.placeholder.text = dados.nome;
-            parcelas_input.placeholder.text = dados.Parcelas.ToString();
-
-            if (!dados.mensal && dados.cartao) valor_input.placeholder.text = (dados.valorMensal * dados.Parcelas).ToString();
-            else valor_input.placeholder.text = dados.valorMensal.ToString();
-
-            tipoDespesa_input.value = dados.cartao ? 0 : 1;
-            tipoItem_input.value = ((int)dados.tipo);
-            mensal_toggle.isOn = dados.mensal;
-            mesesComeca_toggle[dados.mesComeca - 1].isOn = true;*/
         }
         else
         {
             GameObject.Find("Item_txt").GetComponent<TextMeshProUGUI>().text = "Item";
             
-            ResetarInputs();
+            ResetInputValues();
             edited = false;
         }
     }
-
-    public void InstantiateReportItems(Item dados, bool test)
+    public void SairEdicao()
     {
-        GameObject item;
-        if(dados.tipo == Item.Tipo.DESPESA) item = Instantiate(Prefab_reportGasto, parentReports);
-        else item = Instantiate(Prefab_reportExtra, parentReports);
-        
-        dados.test = test;
-        item.GetComponent<ItemDados>().dados = dados;
+        Despesa.current.editar = null;
     }
+    #endregion
 
-    private void ResetarInputs()
+    #region Instantiation
+    public void InstantiateSavedItens()
     {
-        creation_inputName.Default();
-        creation_inputParcels.Default();
-        creation_inputPrice.Default();
+        parentItems.DeleteChildren();
 
-        creation_dpTypeExpense.value = 0;
-        creation_dpTypeItem.value = 0;
-
-        creation_tgIsMonthly.isOn = false;
-        creation_tgTest.isOn = true;
-        creation_tgInitMonth[Despesa.current.getCurrentMonth() - 1].isOn = true;
+        foreach (Item i in Despesa.current.getItems())
+        {
+            var item = Instantiate(Prefab_item, parentItems);
+            item.name = i.getName();
+            Despesa.current.UpdateLimitValue(i.getTotalPrice());
+            item.GetComponent<ItemDados>().dados = i;
+        }
     }
-
-
-    public void MudarMesQueComeca(int i)
+    private void InstantiateItemsForReport()
     {
-        currentMonth = i;
+        var result = Despesa.current.getItems().Where(t => t.getInitMonth() == reportMonth && t.getYear() == reportYear).ToArray();
+
+
+        for (int i = 0; i < result.Length; i++)
+        {
+            GameObject item;
+            if (result[i].getType() == Item.TipoItem.DESPESA)
+                item = Instantiate(Prefab_reportGasto, parentReports);
+            else
+                item = Instantiate(Prefab_reportExtra, parentReports);
+
+            item.GetComponent<StoreItemData>().Initiate(result[i]);
+        }
     }
-    public void MudarMesAtual(int i)
+    #endregion
+
+    #endregion
+
+    #region Report
+    public void InitReportScene()
     {
-        Despesa.current.setCurrentMonth(i);
+        SetMonthlyPage();
+
+        if (paginaRelatorio + 1 == monthsAvailables) setaProx.gameObject.SetActive(false);
+        else if (paginaRelatorio == 0) setaAnt.gameObject.SetActive(false);
+        else
+        {
+            setaAnt.gameObject.SetActive(true);
+            setaProx.gameObject.SetActive(true);
+        }
     }
-
-
-    private string[] MonthReport()
+    public void SetMonthlyPage()
     {
-        string[] result = new string[2];
+        var results = MonthReport();
+
+        monthText.text = Months[reportMonth] + "-" + reportYear.ToString();
+        monthlyCost.text = results[0].ToString().MoneyFormat();
+        monthlySaved.text = results[1].ToString().MoneyFormat();
+        scrollRect.verticalScrollbar.value = 0;
+    }
+    private float[] MonthReport()
+    {
+        float[] values = new float[2];
+
         parentReports.localPosition = new Vector3(0, 0, 0);
         parentReports.GetComponent<RectTransform>().sizeDelta = new Vector2(750, 800);
         parentReports.DeleteChildren();
 
-        return result;
+        InstantiateItemsForReport();
+        values = Despesa.current.CalculateExpenseUntill(paginaRelatorio);
+
+        return values;
     }
     public void NextMonth()
     {
-        if (paginaRelatorio + 1 == monthsAvailables) return;
-
         paginaRelatorio++;
         reportMonth++;
         if(reportMonth == 13) 
@@ -325,32 +379,67 @@ public class DespesaUI : MonoBehaviour
             reportMonth = 1;
         }
 
-        setaProx.currentPage = paginaRelatorio;
-        setaAnt.currentPage = paginaRelatorio;
+        SetMonthlyPage();
 
-        SetarPaginaMes();
+        if (paginaRelatorio + 1 == monthsAvailables) setaProx.gameObject.SetActive(false);
+        else if (paginaRelatorio == 0) setaAnt.gameObject.SetActive(false);
+        else
+        {
+            setaAnt.gameObject.SetActive(true);
+            setaProx.gameObject.SetActive(true);
+        }
     }
     public void PreviousMonth()
     {
-        if (paginaRelatorio - 1 < 0) return;
-
         paginaRelatorio--;
+        reportMonth--;
+        if(reportMonth == -1)
+        {
+            reportYear--;
+            reportMonth = 12;
+        }
 
-        setaProx.currentPage = paginaRelatorio;
-        setaAnt.currentPage = paginaRelatorio;
+        SetMonthlyPage();
 
+        if (paginaRelatorio + 1 == monthsAvailables) setaProx.gameObject.SetActive(false);
+        else if (paginaRelatorio == 0) setaAnt.gameObject.SetActive(false);
+        else
+        {
+            setaAnt.gameObject.SetActive(true);
+            setaProx.gameObject.SetActive(true);
+        }
     }
-    public void SetarPaginaMes()
+    public void LeaveReport()
     {
-        var results = MonthReport();
-
-        monthText.text = Months[reportMonth] + "-" + reportYear.ToString();
-        monthlyCost.text = results[0];
-        monthlySaved.text = results[1];
-        scrollRect.verticalScrollbar.value = 0;
+        ResetInputValues();
     }
-    public void SairRelatorio()
+    public void ShowExtraInfo(Vector3 position, int month, bool credit, bool isTest, bool isMonthly)
     {
-        ResetarInputs();
+        obj_extraInfo.transform.position = position;
+        obj_extraInfo.SetActive(true);
+
+        obj_extraInfo.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = $"Inicio: {MonthsAbv[month]}";
+
+        #region Use Credit Card
+        obj_extraInfo.transform.GetChild(1).GetComponent<Toggle>().isOn = !credit;
+        var color = obj_extraInfo.transform.GetChild(1).GetComponent<Image>().color;
+        color.a = credit ? 1 : 0.5f;
+        obj_extraInfo.transform.GetChild(1).GetComponent<Image>().color = color;
+        #endregion
+
+        #region Is Test Item
+        obj_extraInfo.transform.GetChild(2).GetComponent<Toggle>().isOn = !isTest;
+        color = obj_extraInfo.transform.GetChild(2).GetComponent<Image>().color;
+        color.a = !isTest ? 1 : 0.5f;
+        obj_extraInfo.transform.GetChild(2).GetComponent<Image>().color = color;
+        #endregion
+
+        #region Is Monthly
+        obj_extraInfo.transform.GetChild(3).GetComponent<Toggle>().isOn = !isMonthly;
+        color = obj_extraInfo.transform.GetChild(3).GetComponent<Image>().color;
+        color.a = isMonthly ? 1 : 0.5f;
+        obj_extraInfo.transform.GetChild(3).GetComponent<Image>().color = color;
+        #endregion
     }
+    #endregion
 }

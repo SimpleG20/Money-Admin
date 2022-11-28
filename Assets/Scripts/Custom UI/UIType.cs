@@ -42,7 +42,7 @@ public class UIType : UIButton, IPointerClickHandler, IPointerDownHandler, IPoin
     {
         base.Init();
         setFunctions();
-        ChangeLabel();
+        ChangeLabelFromEditor();
 
         ObjectRef = gameObject;
         initFunctions[typeUi](gameObject);
@@ -125,7 +125,7 @@ public class UIType : UIButton, IPointerClickHandler, IPointerDownHandler, IPoin
 
     #region ContextMenu
     [ContextMenu("Change Label")]
-    public override string ChangeLabel()
+    public override string ChangeLabelFromEditor()
     {
         if (!hasLabel) return "";
 

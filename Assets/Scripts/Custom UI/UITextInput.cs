@@ -7,29 +7,27 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static Enums;
-using static System.Net.Mime.MediaTypeNames;
 
 [RequireComponent(typeof(CanvasGroup), typeof(Animator))]
 public class UITextInput : UIElement, IPointerClickHandler
 {
     public TypeInputValue type;
     public string prefix, sufix, placeholderDefault;
-    public TMP_FontAsset labelFont;
 
-    public TextMeshProUGUI inputText, inputGhost;
-    public TextMeshProUGUI placeholder;
+    [SerializeField] protected TextMeshProUGUI inputText, inputGhost;
+    [SerializeField] protected TextMeshProUGUI placeholder;
     private string placeholderString;
     
-    public TMP_FontAsset font;
+    public TMP_FontAsset labelFont;
+    public TMP_FontAsset fontInput;
     public int fontSize;
     public bool hasHighlight;
-    private bool waitingInput;
+    [SerializeField] protected GameObject highlight;
+
 
     private Vector3 prevTransform;
-
     private InputValue inputValue;
     private GameObject leaveButton;
-    [SerializeField] protected GameObject highlight;
 
     private IEnumerator Start()
     {
@@ -70,6 +68,19 @@ public class UITextInput : UIElement, IPointerClickHandler
 
     #region get and set
     public InputValue getInputValue() => inputValue;
+    public string getPlaceholderSrting() => placeholderString;
+    public string getInputString() => inputText.text;
+    public GameObject getInputGhostOB() => inputGhost.gameObject;
+    public void setPlaceholder(string s, bool defaultString = default)
+    {
+        placeholder.text = s;
+        if (defaultString) placeholderDefault = s;
+        placeholderString = s;
+    }
+    public void setInputText(string s)
+    {
+        inputText.text = s;
+    }
     #endregion
 
     #region Selection
@@ -224,6 +235,30 @@ public class UITextInput : UIElement, IPointerClickHandler
             inputText.color = color;
         });
     }
+    private bool WaitForInput(string input, TypeInputValue typeInput)
+    {
+        var length = input.Length;
+
+        if (input.Contains(","))
+        {
+            if (length - input.IndexOf(",") >= 3) return false;
+        }
+        else
+        {
+            if (input == "" || input == "...") return false;
+            if (typeInput == TypeInputValue.String)
+            {
+                if (length > 30) return false;
+            }
+            else
+            {
+                if (length > 10 && typeInput == TypeInputValue.Int) return false;
+                if (length > 12 && typeInput == TypeInputValue.Float) return false;
+            }
+        }
+
+        return true;
+    }
     private void InputShowingSituation(bool value)
     {
         inputText.gameObject.SetActive(value);
@@ -232,42 +267,42 @@ public class UITextInput : UIElement, IPointerClickHandler
     {
         inputText.text = s;
 
-        if (s.CommaRule("_", type))
+        if (WaitForInput(s, type))
         {
             inputGhost.gameObject.SetActive(true);
             inputGhost.fontSizeMax = inputText.fontSize;
             inputGhost.LoopStringFading();
-            inputText.transform.GetComponentInParent<HorizontalLayoutGroup>().padding = new RectOffset(30, 52, 0, 0);
+            inputText.transform.parent.GetComponent<HorizontalLayoutGroup>().padding = new RectOffset(30, 52, 0, 0);
         }
         else
         {
             LeanTween.cancel(inputGhost.gameObject);
             inputGhost.gameObject.SetActive(false);
-            inputText.transform.GetComponentInParent<HorizontalLayoutGroup>().padding = new RectOffset(0, 0, 0, 0);
+            inputText.transform.parent.GetComponent<HorizontalLayoutGroup>().padding = new RectOffset(0, 0, 0, 0);
         }
     }
     #endregion
 
     #region ContextMenu
-    public void UpdateHighlight()
+    public void SetHighlightFromEditor()
     {
         highlight = transform.GetChild(0).GetChild(2).GetChild(0).gameObject;
     }
-    public void ChangeFont()
+    public void ChangeFontFromEditor()
     {
         if (inputText == null) inputText = transform.GetChild(0).GetChild(2).GetComponent<TextMeshProUGUI>();
         if (placeholder == null) placeholder = transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>();
         if (hasLabel) labelComponent.font = labelFont;
 
-        inputText.font = font;
-        placeholder.font = font;
+        inputText.font = fontInput;
+        placeholder.font = fontInput;
 
         if(inputText.enableAutoSizing) inputText.fontSizeMax = fontSize;
         else inputText.fontSize = fontSize;
         if(placeholder.enableAutoSizing) placeholder.fontSizeMax = fontSize;
         else placeholder.fontSize = fontSize;
     }
-    public void ChangeLabel(string label, bool useLabel = true)
+    public void ChangeLabelFromEditor(string label, bool useLabel = true)
     {
         if (!useLabel)
         {
@@ -279,7 +314,7 @@ public class UITextInput : UIElement, IPointerClickHandler
         if (labelComponent == null) transform.GetChild(0).GetChild(0).TryGetComponent(out labelComponent);
         labelComponent.text = label;
     }
-    public void showLabel()
+    public void ShowLabelFromEditor()
     {
         if (!hasLabel) return;
 
@@ -288,7 +323,7 @@ public class UITextInput : UIElement, IPointerClickHandler
         labelComponent.text = labelText;
         labelComponent.font = labelFont;
     }
-    public string ChangePlaceholder()
+    public string SetPlaceholderFromEditor()
     {
         if(placeholder == null) transform.GetChild(0).GetChild(1).TryGetComponent(out placeholder);
         placeholder.text = placeholderDefault;

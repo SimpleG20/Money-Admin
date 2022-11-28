@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -22,9 +23,11 @@ public class ItemDados : MonoBehaviour
     {
         if(local == Tipo.Salvos)
         {
+            //Use Linq here
+            //Despesa.current.listaSalvos
             foreach(Item i in Despesa.current.listaSalvos.itens)
             {
-                if(i.nome.ToLower() == dados.nome.ToLower())
+                if(i.getName().ToLower() == dados.getName().ToLower())
                 {
                     Despesa.current.listaSalvos.itens.Remove(i);
                     Salvar.SalvarDados(Despesa.current.listaSalvos);
@@ -34,13 +37,13 @@ public class ItemDados : MonoBehaviour
         }
         else
         {
-            foreach (Item i in Despesa.current.ItemsList)
+            foreach (Item i in Despesa.current.getItems())
             {
-                if (i.nome.ToLower() == dados.nome.ToLower())
+                if (i.getName().ToLower() == dados.getName().ToLower())
                 {
-                    if (!i.mensal && i.cartao && i.tipo == Item.Tipo.DESPESA) Despesa.current.setCurrentLimit(i.valorMensal * i.parcelas);
+                    if (!i.getIsMonthly() && i.getUseCreditCard() && i.getType() == Item.TipoItem.DESPESA) Despesa.current.setCurrentLimit(i.getTotalPrice());
                     //Despesa.current.ui.AtualizarLimite();
-                    Despesa.current.ItemsList.Remove(i);
+                    Despesa.current.RemoveFromList(i);
                     Destroy(gameObject);
                     break;
                 }
@@ -57,8 +60,8 @@ public class ItemDados : MonoBehaviour
     public void Setar()
     {
         Color cor;
-        nome.text = dados.nome;
-        if (dados.tipo == Item.Tipo.DESPESA)
+        nome.text = dados.getName();
+        if (dados.getType() == Item.TipoItem.DESPESA)
         {
             ColorUtility.TryParseHtmlString("#FF5D5D", out cor);
             if (tipo != null) { tipo.text = "-"; tipo.color = cor; }
@@ -70,12 +73,12 @@ public class ItemDados : MonoBehaviour
         }
         nome.color = cor;
 
-        if (parcelas != null) { parcelas.text = dados.parcelas.ToString() + "x"; parcelas.color = Color.white; }
-        if (valor != null) valor.text = "R$ " + dados.valorMensal.ToString("F2");
+        if (parcelas != null) { parcelas.text = dados.getParcels().ToString() + "x"; parcelas.color = Color.white; }
+        if (valor != null) valor.text = "R$ " + dados.getMonthlyPrice().ToString("F2");
 
         if (local == Tipo.Lista)
         {
-            if (dados.test) salvo_img.gameObject.SetActive(true);
+            if (dados.getIsTest()) salvo_img.gameObject.SetActive(true);
             else salvo_img.gameObject.SetActive(false);
         }
         else if (local == Tipo.Salvos) salvo_img.gameObject.SetActive(true);

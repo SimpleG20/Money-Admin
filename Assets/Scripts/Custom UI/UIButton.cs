@@ -134,7 +134,7 @@ public abstract class UIButton : UIElement
         rippleSource.color = color;
         rippleSource.transform.localScale = Vector2.zero;
     }
-    public abstract string ChangeLabel();
+    public abstract string ChangeLabelFromEditor();
     public void showLabel()
     {
         if (!hasLabel) return;

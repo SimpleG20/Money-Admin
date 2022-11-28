@@ -97,7 +97,7 @@ public class KeyboardPad : UIButton, IPointerDownHandler, IPointerUpHandler, IPo
         LeanTween.scale(gameObject, Vector2.one, 0.15f).setOnComplete(() => LeanTween.cancel(gameObject)); ;
     }
 
-    public override string ChangeLabel()
+    public override string ChangeLabelFromEditor()
     {
         if (!hasLabel) return "";
 

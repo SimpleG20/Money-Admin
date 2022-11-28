@@ -28,15 +28,11 @@ public class ListaSalvos
         dados.itens = new List<Item>();
         for(int i = 0; i < tam; i++)
         {
-            Item item = ScriptableObject.CreateInstance<Item>();
-            item.nome = nomes[i];
-            item.tipo = matriz[i, 0] == 1 ? Item.Tipo.EXTRA : Item.Tipo.DESPESA;
-            item.valorMensal = matriz[i, 1];
-            item.parcelas = (int)matriz[i, 2];
-            item.mesComeca = (int)matriz[i, 3];
-            item.cartao = matriz[i, 4] == 1 ? true : false;
-            item.mensal = matriz[i, 5] == 1 ? true : false;
-            item.extraAplicado = false;
+            Item item = new Item(nomes[i], 
+                                (int)matriz[i, 0], matriz[i, 1] == 1, 
+                                matriz[i, 2] == 1, matriz[i, 3] == 1, 
+                                (int)matriz[i, 4], matriz[i, 5], 
+                                (int)matriz[i, 6], (int)matriz[i, 7]);
             dados.itens.Add(item);
         }
 
@@ -49,17 +45,19 @@ public class ListaSalvos
         int i = 0;
         tam = dados.tamanhoMatriz;
         nomes = new string[tam];
-        matriz = new float[tam, 6];
+        matriz = new float[tam, 8];
 
         foreach(Item item in dados.itens)
         {
-            nomes[i] = item.nome;
-            matriz[i, 0] = ((int)item.tipo); //tipo
-            matriz[i, 1] = item.valorMensal; //valor
-            matriz[i, 2] = item.parcelas; //parcelas
-            matriz[i, 3] = item.mesComeca; //mes
-            matriz[i, 4] = item.cartao ? 1 : 0; //cartao
-            matriz[i, 5] = item.mensal? 1 : 0; //mensal
+            nomes[i] = item.getName();
+            matriz[i, 0] = ((int)item.getType());               //tipo
+            matriz[i, 1] = item.getIsTest()? 1 : 0;             //eh soh um teste
+            matriz[i, 2] = item.getShowMonthlyPrice() ? 1 : 0;  //mostrar valor mensal
+            matriz[i, 3] = item.getIsMonthly() ? 1 : 0;         //mensal
+            matriz[i, 4] = item.getUseCreditCard() ? 1 : 0;      //cartao
+            matriz[i, 5] = item.getMonthlyPrice();              //mensal
+            matriz[i, 6] = item.getParcels();                   //parcelas
+            matriz[i, 7] = item.getInitMonth();                 //mes de inicio
             i++;
         }
     }

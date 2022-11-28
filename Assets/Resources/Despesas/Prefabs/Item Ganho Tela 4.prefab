@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6203743463008758773}
   - component: {fileID: 6203743463008758772}
   m_Layer: 5
-  m_Name: Times
+  m_Name: Parcels
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -162,6 +162,7 @@ GameObject:
   - component: {fileID: 6203743463552189692}
   - component: {fileID: 6203743463552189187}
   - component: {fileID: 6203743463552189186}
+  - component: {fileID: 6424209442027032186}
   m_Layer: 5
   m_Name: Item Ganho Tela 4
   m_TagString: Untagged
@@ -247,6 +248,21 @@ MonoBehaviour:
   m_EffectColor: {r: 0.2627451, g: 0.5882353, b: 0.1764706, a: 0.5019608}
   m_EffectDistance: {x: 10, y: -10}
   m_UseGraphicAlpha: 1
+--- !u!114 &6424209442027032186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6203743463552189184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54b620b5906c28d4eb1557aecd563cdb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nameTxt: {fileID: 6203743464893673848}
+  valueTxt: {fileID: 6203743464613721937}
+  parcelsTxt: {fileID: 6203743463008758773}
 --- !u!1 &6203743464080534557
 GameObject:
   m_ObjectHideFlags: 0
@@ -257,7 +273,9 @@ GameObject:
   m_Component:
   - component: {fileID: 6203743464080534558}
   - component: {fileID: 6203743464080534552}
+  - component: {fileID: 5310315410575670846}
   - component: {fileID: 6203743464080534559}
+  - component: {fileID: 4755028136983605261}
   m_Layer: 5
   m_Name: Bt More
   m_TagString: Untagged
@@ -293,6 +311,67 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6203743464080534557}
   m_CullTransparentMesh: 1
+--- !u!114 &5310315410575670846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6203743464080534557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a0ff671854cfff4bb5a2bff409a4cc2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelComponent: {fileID: 0}
+  hasLabel: 0
+  labelText: 
+  scaleSize: 1.1
+  selected: 0
+  scale: 1
+  scaleOnHover: 0
+  scaleOnClick: 1
+  _interactable: 1
+  linkedObjects: []
+  showVariables: 0
+  toggle: 0
+  useRipple: 0
+  temporarilyHighlight: 0
+  highlightSource: {fileID: 0}
+  rippleSource: {fileID: 0}
+  typeUi: 0
+  destinationBtParams:
+    managment: {fileID: 0}
+    target: 0
+  pageBtParams:
+    maxPages: 0
+    multiplePages: 1
+    direction: 0
+    pages: []
+    title: {fileID: 0}
+    clickEvent:
+      m_PersistentCalls:
+        m_Calls: []
+  holdBtParams:
+    released: 0
+    type: 0
+    max: 0
+    min: 0
+  clickEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 6424209442027032186}
+        m_TargetAssemblyTypeName: StoreItemData, Assembly-CSharp
+        m_MethodName: ShowExtraInfo
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &6203743464080534559
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -323,6 +402,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &4755028136983605261
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6203743464080534557}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &6203743464613721943
 GameObject:
   m_ObjectHideFlags: 0
@@ -358,8 +449,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0.000030518, y: 62.392998}
-  m_SizeDelta: {x: 618.8314, y: 124.7867}
+  m_AnchoredPosition: {x: 80.43081, y: 62.392998}
+  m_SizeDelta: {x: 779.693, y: 124.7867}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6203743464613721938
 CanvasRenderer:
@@ -416,12 +507,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 110
+  m_fontSize: 102.8
   m_fontSizeBase: 110
   m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 50
+  m_fontSizeMax: 110
   m_fontStyle: 0
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 512

@@ -5,6 +5,7 @@ using UnityEngine;
 using static Enums;
 using UnityEngine.UIElements;
 using static UnityEditor.MaterialProperty;
+using TMPro;
 
 [CustomEditor(typeof(KeyboardPad))]
 [CanEditMultipleObjects]
@@ -30,7 +31,7 @@ public class UIKeyboardEditor : Editor
     public override void OnInspectorGUI()
     {
         KeyboardPad button = (KeyboardPad)target;
-        CustomUIBase.Title("UI Keyboard by ASGD");
+        CustomUIBase.Title("UI Keyboard by ASGD", Resources.Load<Font>("Fonts/Sans Mateo 2 Semi Bold"));
 
         var styleBack = new GUIStyle(GUI.skin.textField);
         styleBack.padding = new RectOffset(10, 10, 10, 10);
@@ -114,7 +115,7 @@ public class UIKeyboardEditor : Editor
         {
             if (labelChanged)
             {
-                labelPast = button.ChangeLabel();
+                labelPast = button.ChangeLabelFromEditor();
             }
         }
     }
