@@ -28,6 +28,10 @@ public static class Extensions
         }
         return 0;
     }
+    public static T PickRandom<T>(this List<T> obj)
+    {
+        return obj[Random.Range(0, obj.Count)];
+    }
     public static List<T> getList<T>(this List<GameObject> list)
     {
         if (list == null) return null;
@@ -40,7 +44,24 @@ public static class Extensions
 
         return ret;
     }
+    public static List<T> getChildsWithComponentT<T>(this Transform transform)
+    {
+        List<T> ret = new List<T>();
 
+        foreach(Transform child in transform)
+        {
+            if(child.GetComponent<T>() != null)
+                ret.Add(child.GetComponent<T>());
+            if(child.childCount != 0)
+            {
+                var list = child.getChildsWithComponentT<T>();
+                foreach (T component in list)
+                    ret.Add(component);
+            }
+        }
+
+        return ret;
+    }
     public static void DeleteChildren(this Transform transform)
     {
         foreach (Transform child in transform) Object.Destroy(child.gameObject);
@@ -48,20 +69,7 @@ public static class Extensions
 
 
     #region String
-    public static void setPlaceholderUpdated(this UITextInput ui, string value)
-    {
-        StringBuilder stringBuilder= new StringBuilder();
-
-        if (value == "" || value == "0") { ui.setPlaceholder(ui.placeholderDefault); return; }
-
-        stringBuilder.Append(ui.prefix);
-        stringBuilder.Append(value);
-
-        ui.NeedSufix(stringBuilder.ToString());
-
-        ui.placeholderDefault = ui.prefix + value + ui.sufix;
-    }
-    public static void LoopStringFading(this TextMeshProUGUI text)
+    public static void LoopStringFadingTMPro(this TextMeshProUGUI text)
     {
         LeanTween.cancel(text.gameObject);
         LeanTween.value(text.gameObject, 0, 1, 0.6f).setLoopPingPong().setOnUpdate((value) =>
@@ -71,7 +79,7 @@ public static class Extensions
             text.color = color;
         });
     }
-    public static void CheckCommaSituation(this TextMeshProUGUI text)
+    public static void CheckCommaSituationTMPro(this TextMeshProUGUI text)
     {
         if (text.text.Contains(","))
         {
@@ -90,6 +98,26 @@ public static class Extensions
             }
         }
     }
+    public static string CheckCommaSituation(this string text)
+    {
+        if (text.Contains(","))
+        {
+            var builder = new StringBuilder();
+            if (text.Length - text.IndexOf(",") < 2)
+            {
+                builder.Append(text);
+                builder.Append("00");
+                text = builder.ToString();
+            }
+            else if (text.Length - text.IndexOf(",") < 3)
+            {
+                builder.Append(text);
+                builder.Append("0");
+                text = builder.ToString();
+            }
+        }
+        return text;
+    }
     public static string MoneyFormat(this string text)
     {
         var builder = new StringBuilder();
@@ -106,6 +134,12 @@ public static class Extensions
                 builder.Append(text);
                 builder.Append("0");
             }
+            else builder.Append(text);
+        }
+        else
+        {
+            builder.Append(text);
+            builder.Append(",00");
         }
         return builder.ToString();
     }

@@ -55,7 +55,11 @@ public class UIElement : MonoBehaviour
     public bool hasAnimator() => m_hasAnimator;
     public bool isInteractable() => interactable;
     public string getLabel() => labelText;
-    public Animator getAnimator() => animator;
+    public Animator getAnimator()
+    {
+        animator = GetComponent<Animator>();
+        return animator;
+    }
     public CanvasGroup getCanvasGroup() => canvasGroup;
     public void setInteractable(bool value) => interactable = value;
     public void setLabel(string label)

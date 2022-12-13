@@ -13,6 +13,8 @@ public class GameManager : MonoBehaviour
         get
         {
             if(instance == null) instance = FindObjectOfType<GameManager>();
+            if(instance == null) instance = new GameObject().AddComponent<GameManager>();
+
             return instance;
         }
         set
@@ -28,7 +30,6 @@ public class GameManager : MonoBehaviour
     #endregion
 
     [SerializeField] GameObject leaveInput;
-    [SerializeField] Despesa despesaManager;
 
     public bool variablesSet;
     public bool canSetInteractable;
@@ -41,7 +42,8 @@ public class GameManager : MonoBehaviour
 
     public void Initialize()
     {
-        
+        Despesa.current.Initialize();
+        DespesaUI.current.Initialize();
     }
 
     public async void LeaveInputSection(string s=default)

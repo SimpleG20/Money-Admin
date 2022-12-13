@@ -17,7 +17,7 @@ public class PageButton : AbstractButton
         set
         {
             _currentPage = value;
-            if ((_currentPage == 0 && direction == -1) || (_currentPage == maxPages && maxPages > 0 && direction == 1))
+            if ((_currentPage == 1 && direction == -1) || (_currentPage == maxPages && maxPages > 0 && direction == 1))
                 objectRef.gameObject.SetActive(false);
             else
                 objectRef.gameObject.SetActive(true);
@@ -38,8 +38,8 @@ public class PageButton : AbstractButton
     {
         obj.TryGetComponent(out manager);
         objectRef = obj;
-        currentPage = 0;
-        maxPages = multiplePages ? pages.Count - 1 : 0; 
+        currentPage = 1;
+        maxPages = multiplePages ? pages.Count - 1 : 1; 
 
         other = manager.linkedObjects[0].GetComponent<UIType>().getPageParams();
         tokenSource = new CancellationTokenSource();
@@ -54,7 +54,7 @@ public class PageButton : AbstractButton
 
     private void MultiplePages()
     {
-        pages[currentPage].GetComponent<UIElement>().HideUi();
+        pages[currentPage - 1].GetComponent<UIElement>().HideUi();
 
         currentPage += direction;
         other.currentPage = currentPage;

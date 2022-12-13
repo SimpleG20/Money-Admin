@@ -11,7 +11,9 @@ public class ScenesManagment : MonoBehaviour
     public int sceneTest;
 
     int currentScene;
+    public GameObject leaveEditBt, makeChangeEditBt, addBt;
     [SerializeField] UIElement[] scenes;
+    [SerializeField] UIType[] icons;
     [SerializeField] UIElement backIcons;
 
     public static ScenesManagment Instance
@@ -38,7 +40,7 @@ public class ScenesManagment : MonoBehaviour
     public int getScene() => currentScene;
     public UIElement getCurrentScene() => scenes[currentScene - 1];
     public UIElement[] getScenes() => scenes;
-
+    public UIType[] getIcons() => icons;
     public void ChangeScene(int index)
     {
         if (index == -1) { Application.Quit(); return; }
@@ -57,19 +59,41 @@ public class ScenesManagment : MonoBehaviour
     #region Scenes Initiations
     private void Scene1()
     {
-        
+        print("Entry Scene");
     }
     private void Scene2()
     {
+        if (DespesaUI.current.edited)
+            DespesaUI.current.SairEdicao();
 
+        print("Main Scene");
     }
     private void Scene3()
     {
 
+        print("Creation Scene");
+    }
+    public void EditScene()
+    {
+        icons[1].ClickFunction();
+        addBt.SetActive(false);
+        makeChangeEditBt.SetActive(true);
+        leaveEditBt.SetActive(true);
+    }
+    public void LeaveEditScene()
+    {
+        addBt.SetActive(true);
+        makeChangeEditBt.SetActive(false);
+        leaveEditBt.SetActive(false);
     }
     private void Scene4()
     {
+        if (DespesaUI.current.edited)
+            DespesaUI.current.SairEdicao();
 
+        DespesaUI.current.InitReportScene();
+
+        print("Report Scene");
     }
     #endregion
 
@@ -88,6 +112,7 @@ public class ScenesManagment : MonoBehaviour
     [ContextMenu("Change Scene")]
     void RandomScene()
     {
+        DefaultScene();
         scenes[currentScene - 1].gameObject.SetActive(false);
         scenes[currentScene - 1].gameObject.GetComponent<CanvasGroup>().alpha = 0;
 

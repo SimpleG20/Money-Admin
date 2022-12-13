@@ -2,31 +2,32 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.InteropServices;
 
 public static class Salvar
 {
-    public static void SalvarDados(ListaSalvos lista)
+    public static void SaveInputs()
     {
         BinaryFormatter formatter = new BinaryFormatter();
-        string path = Application.persistentDataPath + "/saves.AGSD";
+        string path = Application.persistentDataPath + "/MAdm.AGSD";
 
         FileStream stream = new FileStream(path, FileMode.Create);
 
-        ListaSalvosData data = new ListaSalvosData(lista);
+        InputsToSave data = new InputsToSave();
 
         formatter.Serialize(stream, data);
         stream.Close();
     }
-
-    public static ListaSalvosData LoadDados()
+    public static InputsToSave LoadInputs()
     {
-        string path = Application.persistentDataPath + "/saves.AGSD";
+        string path = Application.persistentDataPath + "/MAdm.AGSD";
+        Debug.Log(path);
         if (File.Exists(path))
         {
             BinaryFormatter formatter = new BinaryFormatter();
             FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read);
 
-            ListaSalvosData data = formatter.Deserialize(stream) as ListaSalvosData;
+            InputsToSave data = formatter.Deserialize(stream) as InputsToSave;
             stream.Close();
 
             return data;
@@ -35,28 +36,87 @@ public static class Salvar
         {
             Debug.LogError("Save file not found in " + path);
 
-            SalvarDados(null);
             return null;
         }
     }
 
-    public static void CarregarDados()
+    public static void SaveItems()
     {
-        ListaSalvosData data = LoadDados();
+        BinaryFormatter formatter = new BinaryFormatter();
+        string path = Application.persistentDataPath + "/Items_MAdm.AGSD";
 
-        if (data == null) 
+        FileStream stream = new FileStream(path, FileMode.Create);
+
+        DataToSave data = new DataToSave();
+
+        formatter.Serialize(stream, data);
+        stream.Close();
+    }
+    public static DataToSave LoadItems()
+    {
+        string path = Application.persistentDataPath + "/Items_MAdm.AGSD";
+        Debug.Log(path);
+        if (File.Exists(path))
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+
+            DataToSave data = formatter.Deserialize(stream) as DataToSave;
+            stream.Close();
+
+            return data;
+        }
+        else
+        {
+            Debug.LogError("Save file not found in " + path);
+
+            return null;
+        }
+    }
+
+
+    public static bool CarregarDados()
+    {
+        DataToSave itemsData = LoadItems();
+        InputsToSave inputsData = LoadInputs();
+
+        if (itemsData == null && inputsData == null) 
         {
             Debug.Log("Novo Salvamento");
-            ListaSalvos lista = new ListaSalvos();
-            Despesa.current.listaSalvos = lista;
-            //Despesa.current.ui.instanciarItensSalvos_button.gameObject.SetActive(false);
-            SalvarDados(Despesa.current.listaSalvos);
+
+            Despesa.current.dataToSave = new AuxDataToSave();
+            Despesa.current.dataToSave.itens = new List<Item>();
+            Despesa.current.inputsToSave = new AuxInputsToSave();
+
+            SaveItems();
+            SaveInputs();
+            return false;
+        }
+        else if( itemsData == null)
+        {
+            Debug.Log("Items Novo Salvamento");
+
+            Despesa.current.dataToSave = new AuxDataToSave();
+            Despesa.current.dataToSave.itens = new List<Item>();
+
+            SaveItems();
+            return false;
+        }
+        else if(inputsData == null)
+        {
+            Debug.Log("Inputs Novo Salvamento");
+
+            Despesa.current.inputsToSave = new AuxInputsToSave();
+
+            SaveInputs();
+            return false;
         }
         else
         {
             Debug.Log("Carregado Com Sucesso");
-            Despesa.current.listaSalvos.AtualizarInputs(data);
-            Despesa.current.listaSalvos.TransferirArraylista(Despesa.current.listaSalvos, data.nomes, data.matriz_itens, data.tamMatriz);
+            Despesa.current.dataToSave.ConvertArrayToList(itemsData);
+            Despesa.current.inputsToSave.ConvertInputs(inputsData);
+            return true;
         }
     }
 

@@ -12,7 +12,8 @@ using static Enums;
 public class UITextInput : UIElement, IPointerClickHandler
 {
     public TypeInputValue type;
-    public string prefix, sufix, placeholderDefault;
+    public string prefix, sufix;
+    public string placeholderDefault;
 
     [SerializeField] protected TextMeshProUGUI inputText, inputGhost;
     [SerializeField] protected TextMeshProUGUI placeholder;
@@ -33,19 +34,14 @@ public class UITextInput : UIElement, IPointerClickHandler
     {
         yield return new WaitUntil(() => GameManager.Instance.variablesSet && start);
 
-        labelComponent.text = labelText;
-        labelComponent.font = labelFont;
+        if(labelComponent != null)
+        {
+            labelComponent.text = labelText;
+            labelComponent.font = labelFont;
+        }
 
-        if (inputText.text == "")
-        {
-            placeholder.gameObject.SetActive(true);
-            inputText.gameObject.SetActive(false);
-        }
-        else
-        {
-            placeholder.gameObject.SetActive(false);
-            inputText.gameObject.SetActive(true);
-        }
+        placeholder.gameObject.SetActive(true);
+        inputText.gameObject.SetActive(false);
     }
     public override void Init()
     {
@@ -57,7 +53,22 @@ public class UITextInput : UIElement, IPointerClickHandler
             highlight.gameObject.SetActive(false);
         }
 
-        inputValue = new InputValue(type);
+        inputValue = inputValue ?? new InputValue(type);
+        if(placeholder.text != placeholderDefault)
+        {
+            switch (type)
+            {
+                case TypeInputValue.Int:
+                    int.TryParse(placeholder.text, out inputValue.intValue);
+                    break;
+                case TypeInputValue.Float:
+                    float.TryParse(placeholder.text, out inputValue.floatValue);
+                    break;
+                default:
+                    inputValue.stringValue = placeholder.text;
+                    break;
+            }
+        }
     }
 
     public void Default()
@@ -71,10 +82,32 @@ public class UITextInput : UIElement, IPointerClickHandler
     public string getPlaceholderSrting() => placeholderString;
     public string getInputString() => inputText.text;
     public GameObject getInputGhostOB() => inputGhost.gameObject;
-    public void setPlaceholder(string s, bool defaultString = default)
+    public void setPlaceholder(string s, TypeInputValue type, bool money = false)
     {
+        if(inputValue == null) inputValue = new InputValue(this.type);
+
+        switch (type)
+        {
+            case TypeInputValue.Int:
+                int.TryParse(s, out inputValue.intValue);
+                break;
+            case TypeInputValue.Float:
+                float.TryParse(s, out inputValue.floatValue);
+                break;
+            default:
+                inputValue.stringValue = s;
+                break;
+        }
+
+        if (s == "" || s == "0")
+        {
+            placeholder.text = placeholderDefault;
+            return;
+        }
+
+        if (money) s = s.MoneyFormat();
+
         placeholder.text = s;
-        if (defaultString) placeholderDefault = s;
         placeholderString = s;
     }
     public void setInputText(string s)
@@ -108,19 +141,32 @@ public class UITextInput : UIElement, IPointerClickHandler
         WaitingInput();
         DisplayLeaveButton();
     }
-    public void WaitingInput()
+    private void WaitingInput()
     {
         if (Keyboard.waitingInput) return;
 
-        inputGhost.gameObject.SetActive(false);
-        Keyboard.waitingInput = true;
+        var waiting = new StringBuilder();
+        if (placeholderString == placeholderDefault) waiting.Append(inputText.text);
+        else 
+        {
+            waiting.Append(placeholderString);
+            waiting.Remove(0, prefix.Length);
+            inputText.text = waiting.ToString(); 
+        }
 
-        var waiting = inputText.text;
-        if (waiting == "") waiting = "...";
+        if (waiting.ToString() != "")
+        {
+            ChangingInputsTexts(waiting.ToString());
+            return;
+        }
 
-        inputText.text = waiting;
-        inputText.transform.parent.GetComponent<HorizontalLayoutGroup>().padding = new RectOffset(0, 0, 0, 0);
-        WaitingFading();
+        if (waiting.ToString() == "")
+        {
+            waiting.Clear();
+            waiting.Append("...");
+        }
+        inputText.text = waiting.ToString();
+        CheckInputText();
     }
     private void DisplayKeyboard()
     {
@@ -202,13 +248,15 @@ public class UITextInput : UIElement, IPointerClickHandler
             {
                 int result;
                 int.TryParse(inputText.text, out result);
-                if (prefix == "" && result < 10) prefix = result == 0 ? "00": "0";
+                if (prefix == "" && result < 10 && !inputText.text.Contains(",")) 
+                    prefix = result == 0 ? "00": "0";
             }
             else
             {
                 float result;
                 float.TryParse(inputText.text, out result);
-                if (prefix == "" && result < 10) prefix = result == 0 ? "00" : "0";
+                if (prefix == "" && result < 10 && !inputText.text.Contains(",")) 
+                    prefix = result == 0 ? "00" : "0";
             }
         }
         builder.Append(prefix);
@@ -218,8 +266,11 @@ public class UITextInput : UIElement, IPointerClickHandler
 
         placeholder.text = placeholderString = builder.ToString();
     }
-    private void WaitingFading()
+    private void WaitingToInitializeInput()
     {
+        DisableContinueWriting();
+        Keyboard.waitingInput = true;
+
         LeanTween.cancel(inputText.gameObject);
         LeanTween.value(inputText.gameObject, 0, 1, 0.6f).setLoopPingPong().setOnUpdate((value) =>
         {
@@ -235,7 +286,32 @@ public class UITextInput : UIElement, IPointerClickHandler
             inputText.color = color;
         });
     }
-    private bool WaitForInput(string input, TypeInputValue typeInput)
+    private void InputShowingSituation(bool value)
+    {
+        inputText.gameObject.SetActive(value);
+    }
+    public void ChangingInputsTexts(string s)
+    {
+        inputText.text = s;
+
+        if (IsWritingMore(s, type)) EnableContinueWriting();
+        else CheckInputText();
+    }
+
+
+    public void CheckInputText()
+    {
+        if (inputText.text == "" || inputText.text == "...")
+        {
+            inputText.text = "...";
+            WaitingToInitializeInput();
+        }
+        else
+        {
+            if(IsWritingMore(inputText.text, type)) EnableContinueWriting();
+        }
+    }
+    private bool IsWritingMore(string input, TypeInputValue typeInput)
     {
         var length = input.Length;
 
@@ -259,27 +335,18 @@ public class UITextInput : UIElement, IPointerClickHandler
 
         return true;
     }
-    private void InputShowingSituation(bool value)
+    public void DisableContinueWriting()
     {
-        inputText.gameObject.SetActive(value);
+        LeanTween.cancel(inputGhost.gameObject);
+        inputGhost.gameObject.SetActive(false);
+        inputText.transform.parent.GetComponent<HorizontalLayoutGroup>().padding = new RectOffset(0, 0, 0, 0);
     }
-    public void ChangingInputsTexts(string s)
+    private void EnableContinueWriting()
     {
-        inputText.text = s;
-
-        if (WaitForInput(s, type))
-        {
-            inputGhost.gameObject.SetActive(true);
-            inputGhost.fontSizeMax = inputText.fontSize;
-            inputGhost.LoopStringFading();
-            inputText.transform.parent.GetComponent<HorizontalLayoutGroup>().padding = new RectOffset(30, 52, 0, 0);
-        }
-        else
-        {
-            LeanTween.cancel(inputGhost.gameObject);
-            inputGhost.gameObject.SetActive(false);
-            inputText.transform.parent.GetComponent<HorizontalLayoutGroup>().padding = new RectOffset(0, 0, 0, 0);
-        }
+        inputGhost.gameObject.SetActive(true);
+        inputGhost.fontSizeMax = inputText.fontSize;
+        inputGhost.LoopStringFadingTMPro();
+        inputText.transform.parent.GetComponent<HorizontalLayoutGroup>().padding = new RectOffset(30, 52, 0, 0);
     }
     #endregion
 
@@ -290,7 +357,7 @@ public class UITextInput : UIElement, IPointerClickHandler
     }
     public void ChangeFontFromEditor()
     {
-        if (inputText == null) inputText = transform.GetChild(0).GetChild(2).GetComponent<TextMeshProUGUI>();
+        if (inputText == null) inputText = transform.GetChild(0).GetChild(2).GetChild(1).GetChild(0).GetComponent<TextMeshProUGUI>();
         if (placeholder == null) placeholder = transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>();
         if (hasLabel) labelComponent.font = labelFont;
 

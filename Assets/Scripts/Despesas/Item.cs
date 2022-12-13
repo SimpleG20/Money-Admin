@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 [Serializable]
 public class Item
@@ -7,12 +8,14 @@ public class Item
     private TipoItem[] types = new TipoItem[] { TipoItem.DESPESA, TipoItem.EXTRA };
 
     private string name;
+    private int id;
     private TipoItem type;
 
     private int parcels;
     private int initMonth;
     private int lastMonth;
     private int year;
+    private int lastYear;
     private float totalPrice;
     private float monthlyPrice;
 
@@ -21,30 +24,40 @@ public class Item
 
     private bool extraAdded;
     private bool isTest;
-    private bool showMonthlyPrice;
+    private bool storeMothlyPrice;
 
 
-    public Item(string name, int type, bool isTest, bool showMonthlyPrice, bool isMonthly, int creditCard, float price, int parcels, int initMonth)
+    public Item(string name, int id, int type, bool isTest, bool storeMonthlyPrice, bool isMonthly, int creditCard, float price, int parcels, int initMonth, bool loadData)
     {
         this.name = name;
+        this.id = id;
         this.type = types[type];
 
         this.creditCard = creditCard == 0;
         this.isMonthly = isMonthly;
-        if (isMonthly) this.showMonthlyPrice = true;
-        else this.showMonthlyPrice = showMonthlyPrice;
+        if (isMonthly) this.storeMothlyPrice = true;
+        else this.storeMothlyPrice = storeMonthlyPrice;
         this.isTest = isTest;
 
-        if (showMonthlyPrice)
+        if (!loadData)
         {
-            totalPrice = price * parcels;
-            monthlyPrice = price;
+            if (storeMonthlyPrice)
+            {
+                totalPrice = price * parcels;
+                monthlyPrice = Mathf.Round(price * 100f) / 100f;
+            }
+            else
+            {
+                totalPrice = price;
+                monthlyPrice = Mathf.Round(totalPrice / parcels * 100f) / 100f;
+            }
         }
         else
         {
             totalPrice = price;
-            monthlyPrice = price / parcels;
+            monthlyPrice = Mathf.Round(totalPrice / parcels * 100f) / 100f;
         }
+        Debug.Log($"ITEM {name} - {totalPrice}");
         this.parcels = parcels;
 
         if (initMonth < Despesa.current.getCurrentMonth())
@@ -57,11 +70,15 @@ public class Item
             this.initMonth = initMonth;
             year = DateTime.Now.Year;
         }
-        lastMonth = this.initMonth + parcels > 12 ? this.initMonth + parcels - 12 : this.initMonth + parcels;
+        lastMonth = parcels > 12 ? initMonth + (parcels % 12) : initMonth + parcels;
+        lastMonth = lastMonth > 12 ? 12 - lastMonth : lastMonth;
+
+        lastYear = (int)Mathf.Floor(parcels / 12) + year;
     }
 
     #region Gets
     public string getName() => name;
+    public int getId() => id;
     public TipoItem getType() => type;
     public int getParcels() => parcels;
     public int getInitMonth() => initMonth;
@@ -73,29 +90,44 @@ public class Item
     public bool getIsMonthly() => isMonthly;
     public bool getExtraAdded() => extraAdded;
     public bool getIsTest() => isTest;
-    public string getMonthlyPriceFormated() => monthlyPrice.ToString().MoneyFormat();
-    public string getTotalPriceFormated() => totalPrice.ToString().MoneyFormat();
+    public string getMonthlyPriceMoneyFormat() => monthlyPrice.ToString().MoneyFormat();
+    public string getTotalPriceMoneyFormat() => totalPrice.ToString().MoneyFormat();
 
-    public bool getShowMonthlyPrice() => showMonthlyPrice;
+    public bool getShowMonthlyPrice() => storeMothlyPrice;
     public void setExtraAdded(bool value) => extraAdded = value;
     public void setIsTest(bool value) => isTest = value;
     #endregion
 
+    private void PrintItem()
+    {
+        Debug.Log($"Item \n{name} ID: {id} Tipo: {type} " +
+            $"Cartao: {creditCard} Mensal: {isMonthly}" +
+            $"Preco Mensal Armazenado: {storeMothlyPrice}" +
+            $"Preco Total: {totalPrice} Preco Mensal : {monthlyPrice}" +
+            $"Teste: {isTest}");
+    }
+    public bool IsInThisMonthAndYear(int _month, int _year)
+    {
+        if(_year <= year && _month <= lastMonth) return true;
+        return false;
+    }
     public bool DiscountInCurrentLimit()
     {
-        if (totalPrice > Despesa.current.getCurrentLimit()) return false;
+        if (totalPrice > DespesaUI.current.currentLimit) return false;
 
         if (!isMonthly && creditCard && type == TipoItem.DESPESA) 
         { 
-            Despesa.current.DecreaseLimit(totalPrice); 
+            Despesa.current.DecreaseCurrentLimit(totalPrice); 
         }
         return true;
     }
-    public bool RemoveFromLimit()
+    public bool RemoveFromCurrentLimit()
     {
-        if (!isMonthly && creditCard && type == TipoItem.DESPESA) 
-            Despesa.current.IncreaseLimit(totalPrice);
-
-        return true;
+        if (!isMonthly && creditCard && type == TipoItem.DESPESA)
+        {
+            Despesa.current.IncreaseCurrentLimit(totalPrice);
+            return true;
+        }
+        return false;
     }
 }

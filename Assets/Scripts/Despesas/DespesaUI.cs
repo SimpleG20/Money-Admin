@@ -1,61 +1,125 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Linq;
 using UnityEngine.UI;
 using UnityEngine;
 using TMPro;
-using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
+using static Enums;
 
 public class DespesaUI : MonoBehaviour
 {
     #region Aux Variables
+    public bool edited;
+    private int monthsAvailables;
+    private CancellationTokenSource tokenSource;
+
+    #region Consts
     private readonly Dictionary<int, string> Months = new Dictionary<int, string> { { 1, "Janeiro" },    { 2, "Fevereiro" }, { 3, "Março" },
-                                                                           { 4, "Abril"},       { 5, "Maio"},       { 6, "Junho"},
-                                                                           { 7, "Julho"},       { 8, "Agosto"},     { 9, "Setembro"},
-                                                                           { 10, "Outubro"},    { 11, "Novembro"},  {12, "Dezembro" } };
+                                                                                    { 4, "Abril"},       { 5, "Maio"},       { 6, "Junho"},
+                                                                                    { 7, "Julho"},       { 8, "Agosto"},     { 9, "Setembro"},
+                                                                                    { 10, "Outubro"},    { 11, "Novembro"},  {12, "Dezembro" } };
     private readonly Dictionary<int, string> MonthsAbv = new Dictionary<int, string> { { 1, "JAN" },      { 2, "FEV" },       { 3, "MAR" },
-                                                                             { 4, "ABR"},       { 5, "MAI"},        { 6, "JUN"},
-                                                                             { 7, "JUL"},       { 8, "AGO"},        { 9, "SET"},
-                                                                             { 10, "OUT"},      { 11, "NOV"},       {12, "DEZ" } };
+                                                                                        { 4, "ABR"},       { 5, "MAI"},        { 6, "JUN"},
+                                                                                        { 7, "JUL"},       { 8, "AGO"},        { 9, "SET"},
+                                                                                        { 10, "OUT"},      { 11, "NOV"},       {12, "DEZ" } };
 
-    int monthsAvailables;
-    bool edited;
+    public  const string SAVED = "Mudanças Salvas";
+    private const string SUCESSO = "Item adicionado";
+    private const string ERRO_ESTOURO = "Limite estourado";
+    private const string ERRO_MISSING_INFO = "Faltando Informações";
+    public  const string ERRO_NOT_EXIST = "Não existe esse item";
+    public  const string ERRO_LISTNULL = "Lista sem itens";
+    public  const string ERRO_MONTH_MONEY = "Dinheiro insuficiente";
+    #endregion
 
-    private float limit
+    #region Auxs
+    private float _currentLimit;
+    public float currentLimit
+    {
+        get => _currentLimit;
+        set
+        {
+            if (value < 0) return;
+
+            _currentLimit = Mathf.Round(value * 100f) / 100f;
+            creation_limitText.text = _currentLimit.ToString().MoneyFormat();
+        }
+    }
+    public float limit
     {
         get => inputLimit.getInputValue().floatValue;
-        set => inputLimit.setPlaceholder(value.ToString());
+        set
+        {
+            if (value <= 0) return;
+            value = Mathf.Round(value * 100f) / 100f;
+            inputLimit.setPlaceholder(value.ToString(), TypeInputValue.Float, true);
+        }
     }
-    private float income
+    public float income
     {
         get => inputIncome.getInputValue().floatValue;
-        set => inputIncome.setPlaceholder(value.ToString());
+        set 
+        {
+            if(value == 0) return;
+            value = Mathf.Round(value * 100f) / 100f;
+            inputIncome.setPlaceholder(value.ToString(), TypeInputValue.Float, true);
+        } 
     }
-    private float stored
+    public float initMoney
     {
         get => inputStored.getInputValue().floatValue;
-        set => inputStored.setPlaceholder(value.ToString());
+        set
+        {
+            if (value == 0) return;
+            value = Mathf.Round(value * 100f) / 100f;
+            inputStored.setPlaceholder(value.ToString(), TypeInputValue.Float, true);
+        }
     }
-    private float fees
+    public float fees
     {
         get => inputFees.getInputValue().floatValue;
-        set => inputFees.setPlaceholder(value.ToString());
+        set
+        {
+            if (value == 0) return;
+            value = Mathf.Round(value * 100f) / 100f;
+            inputFees.setPlaceholder(value.ToString().CheckCommaSituation(), TypeInputValue.Float);
+        }
+    }
+    public string searchedItem
+    {
+        get
+        {
+            var temp = inputSearcItem.getInputString();
+            if (temp == "")
+            {
+                parentItems.DeleteChildren();
+                auxTextSearchItem.gameObject.SetActive(true);
+            }
+            return temp;
+        }
     }
     private string nameItem
     {
         get => creation_inputName.getInputValue().stringValue;
-        set => creation_inputName.setPlaceholder(value.ToString());
+        set => creation_inputName.setPlaceholder(value.ToString(), TypeInputValue.String);
     }
     private float priceItem
     {
         get => creation_inputPrice.getInputValue().floatValue; 
-        set => creation_inputPrice.setPlaceholder(value.ToString());
+
+        set
+        {
+            value = Mathf.Round(value * 100f) / 100f;
+            creation_inputPrice.setPlaceholder(value.ToString(), TypeInputValue.Float, true);
+        }
     }
     private int parcelsItem
     {
         get => creation_inputParcels.getInputValue().intValue; 
-        set => creation_inputParcels.setPlaceholder(value.ToString());
+        set => creation_inputParcels.setPlaceholder(value.ToString(), TypeInputValue.Int);
     }
     private int initMonthItem
     {
@@ -89,20 +153,24 @@ public class DespesaUI : MonoBehaviour
     }
     #endregion
 
+    #endregion
+
     #region UI and some variables
 
-    [Header("Creation Part")]
+    [Header("Part 2")]
     #region
     public UITextInput                                              inputLimit;
     public UITextInput                                              inputIncome;
     public UITextInput                                              inputStored;
     public UITextInput                                              inputFees;
-    [SerializeField] TextMeshProUGUI                                totalExpenseTxt, totalSavedTxt;
+    public UITextInput                                              inputSearcItem;
+    public UITextInput                                              inputAmountMonths;
+    [SerializeField] TextMeshProUGUI                                auxTextSearchItem, totalExpenseTxt, totalSavedTxt;
     #endregion
 
-    [Header("Creation Part")]
+    [Header("Part 3")]
     #region
-    [SerializeField] TextMeshProUGUI                                creation_limitText;
+    public           TextMeshProUGUI                                creation_limitText;
     [SerializeField] GameObject                                     creation_warningAdded;
     [SerializeField] UITextInput                                    creation_inputName;
     [SerializeField] UITextInput                                    creation_inputPrice, creation_inputParcels;
@@ -116,13 +184,13 @@ public class DespesaUI : MonoBehaviour
     [SerializeField] GameObject                                     obj_extraInfo;
     [SerializeField] GameObject                                     Prefab_item, Prefab_reportGasto, Prefab_reportExtra;
     [SerializeField] Transform                                      parentItems, parentReports;
-    private GameObject                                              obj_itemToEdit;
+    //private GameObject                                              obj_itemToEdit;
     #endregion
 
     [Header("Relatorio")]
     #region
     [SerializeField] ScrollRect                                     scrollRect;
-    [SerializeField] TextMeshProUGUI                                monthText, monthlyCost, monthlySaved;
+    [SerializeField] TextMeshProUGUI                                monthText, monthlyCostTotal, monthlyCost, monthlySaved;
     [SerializeField] UIType                                         setaProx, setaAnt;
     private int                                                     paginaRelatorio = 0, reportMonth, reportYear;
     #endregion
@@ -134,35 +202,30 @@ public class DespesaUI : MonoBehaviour
     private void Awake()
     {
         current = this;
+        tokenSource = new CancellationTokenSource();
     }
-
-    private void Start()
-    {
-        Initialize();
-    }
-
     public void Initialize()
     { 
+        paginaRelatorio = 1;
+        monthsAvailables = 1;
+        reportYear = DateTime.Now.Year;
         var currentMonth = DateTime.Now.Month;
         reportMonth = currentMonth;
-        reportYear = DateTime.Now.Year;
-        Despesa.current.setCurrentMonth(currentMonth);
 
         creation_tgInitMonth[currentMonth - 1].isOn = true;
-
-        paginaRelatorio = 0;
-        reportMonth = 0;
-        reportYear = DateTime.Now.Year;
+        Despesa.current.setCurrentMonth(currentMonth);
     }
 
     #region Function for Input
-    public void InicializarInputs()
+    public void UpdateInputsFromScene2(float _limit, float _currentLmit, float _income, float _initMoney, float _fees)
     {
-        inputLimit.setPlaceholderUpdated(Despesa.current.getLimit().ToString());
-        inputIncome.setPlaceholderUpdated(Despesa.current.getIncomePerMonth().ToString());
-        inputStored.setPlaceholderUpdated(Despesa.current.getInitialMoney().ToString());
+        print($"Limite: {limit = _limit}");
+        print($"Limite Atual: {currentLimit = _currentLimit}");
+        print($"Renda: {income = _income}");
+        print($"Inicial: {initMoney = _initMoney}");
+        print($"Juros: {fees = _fees}");
     }
-    private void UpdateInputsText(Item dados)
+    private void UpdateInputsTextFromScene3(Item dados)
     {
         nameItem = dados.getName();
         parcelsItem = dados.getParcels();
@@ -175,21 +238,25 @@ public class DespesaUI : MonoBehaviour
         isMonthlyItem = dados.getIsMonthly();
         initMonthItem = dados.getInitMonth() - 1;
 
-        creation_limitText.text = $"R$ {Despesa.current.getCurrentLimit()}";
-        creation_limitText.CheckCommaSituation();
+        creation_limitText.CheckCommaSituationTMPro();
     }
-    private void ResetInputValues()
+    private void ResetInputValuesFromScene3()
     {
-        creation_inputName.Default();
-        creation_inputParcels.Default();
-        creation_inputPrice.Default();
+        nameItem = "";
+        creation_inputName.setInputText("");
+        parcelsItem = 0;
+        creation_inputParcels.setInputText("");
+        priceItem = 0;
+        creation_inputPrice.setInputText("");
 
         typeExpenseItem = 0;
         typeItem = 0;
 
+        showMonthlyPrice = false;
         isMonthlyItem = false;
         testItem = true;
         initMonthItem = Despesa.current.getCurrentMonth() - 1;
+        testItem = false;
     }
     public void DropDown()
     {
@@ -210,125 +277,144 @@ public class DespesaUI : MonoBehaviour
         Item item = CreateItem();
         if(item == null)
         {
-            print("COMPRA INDISPONIVEL! LIMITE ESTOURADO"); 
             return;
         }
         Despesa.current.AddToList(item);
-
-        LeanTween.moveLocalY(creation_warningAdded, -50, 1.5f).setLoopPingPong(1).setOnComplete(() => LeanTween.cancel(creation_warningAdded));
-        ResetInputValues();
+        monthsAvailables = item.getParcels() > monthsAvailables ? item.getParcels() : monthsAvailables;
+        ShowWarning(SUCESSO);
+        
+        ResetInputValuesFromScene3();
     }
     private Item CreateItem()
     {
-        Item item = new Item(nameItem, typeItem, testItem, showMonthlyPrice, isMonthlyItem, typeExpenseItem, priceItem, parcelsItem, initMonthItem);
-        item.DiscountInCurrentLimit();
+        if (!IsItemInfoCorrect())
+        {
+            ShowWarning(ERRO_MISSING_INFO, 1500);
+            return null;
+        }
+        int id;
+        if (Despesa.current.idAvaliables.Count > 0)
+        {
+            id = Despesa.current.idAvaliables.PickRandom();
+            Despesa.current.idAvaliables.Remove(id);
+        }
+        else id = Despesa.current.getLastID();
+        Item item = new Item(nameItem, id, typeItem, testItem, showMonthlyPrice, isMonthlyItem, typeExpenseItem, priceItem, parcelsItem, initMonthItem, false);
 
+        if (!item.DiscountInCurrentLimit())
+        {
+            ShowWarning(ERRO_ESTOURO);
+            return null;
+        }
         if (!item.getIsTest())
         {
-            Despesa.current.listaSalvos.AdicionarLista(Despesa.current.listaSalvos, item);
-            Salvar.SalvarDados(Despesa.current.listaSalvos);
+            Despesa.current.dataToSave.AdicionarLista(item);
+            Salvar.SaveItems();
         }
 
         return item;
     }
+    internal void ShowWarning(string warn, int time = 1000)
+    {
+        creation_warningAdded.GetComponentInChildren<TextMeshProUGUI>().text = warn;
+        var posInit = creation_warningAdded.transform.position.x;
+
+        LeanTween.moveX(creation_warningAdded, posInit - 640, 0.3f)
+            .setOnComplete(() => DisableWarning(posInit, time));
+    }
+    private async void DisableWarning(float posInit, int time)
+    {
+        await Task.Delay(time, tokenSource.Token);
+        if (tokenSource.IsCancellationRequested) return;
+
+        LeanTween.moveX(creation_warningAdded, posInit, 0.3f)
+            .setOnComplete(() => LeanTween.cancel(creation_warningAdded));
+    }
+    private bool IsItemInfoCorrect()
+    {
+        //print($"{nameItem}, {priceItem}, {parcelsItem}");
+        if (nameItem == "" || priceItem == 0) return false;
+        if (parcelsItem == 0) parcelsItem = 1;
+
+        return true;
+    }
     #endregion
 
     #region Edition
-    public void EditarItem(bool b)
+    bool decreasedLimit = false;
+    Item dataFromItemToEdit;
+    public void EditItem()
     {
-        obj_itemToEdit.SetActive(b);
-        if (b == false)
-        {
-            GameObject.Find("Item_txt").GetComponent<TextMeshProUGUI>().text = "Item";
-
-            if (!edited)
-            {
-                Item dados = Despesa.current.editar.GetComponent<ItemDados>().dados;
-                dados.DiscountInCurrentLimit();
-                //AtualizarLimite();
-            }
-            ResetInputValues();
-        }
-        else
-        {
-            GameObject.Find("Item_txt").GetComponent<TextMeshProUGUI>().text = "";
-            Item dados = Despesa.current.editar.GetComponent<ItemDados>().dados;
-            
-            dados.RemoveFromLimit();
-            UpdateInputsText(dados);
-            //AtualizarLimite();
-        }
+        ScenesManagment.Instance.EditScene();
+        dataFromItemToEdit = Despesa.current.editar.getData();
+        Despesa.current.IncreaseCurrentLimit(dataFromItemToEdit.getTotalPrice());
+        UpdateInputsTextFromScene3(dataFromItemToEdit);
     }
-    public void AplicarEdicaoItem()
+    public void ApllyEdition()
     {
         Item item = CreateItem();
         if (item == null)
         {
-            print("COMPRA INDISPONIVEL! LIMITE ESTOURADO");
+            ShowWarning(ERRO_ESTOURO);
             return;
         }
+
+        if (decreasedLimit) Despesa.current.RemoveFromList(Despesa.current.getItems().Find(t => t.getId() == dataFromItemToEdit.getId()));
+        else Despesa.current.getItems().Remove(Despesa.current.getItems().Find(t => t.getId() == dataFromItemToEdit.getId()));
         Despesa.current.AddToList(item);
 
-        LeanTween.moveLocalY(creation_warningAdded, -50, 1.5f).setLoopPingPong(1).setOnComplete(() => LeanTween.cancel(creation_warningAdded));
+        ShowWarning(SUCESSO);
 
-        Despesa.current.editar.GetComponent<ItemDados>().dados = item;
-        Despesa.current.editar.GetComponent<ItemDados>().Setar();
-        //AtualizarLimite();
+        Despesa.current.editar.setData(item);
+        decreasedLimit = true;
         edited = true;
-    }
-    public void EditarSalvos(bool b)
-    {
-        obj_itemToEdit.SetActive(b);
-        if (b == true)
+        if (!item.getIsTest())
         {
-            GameObject.Find("Item_txt").GetComponent<TextMeshProUGUI>().text = "";
-
-            Item dados = Despesa.current.editar.GetComponent<ItemDados>().dados;
-            
-            UpdateInputsText(dados);
-        }
-        else
-        {
-            GameObject.Find("Item_txt").GetComponent<TextMeshProUGUI>().text = "Item";
-            
-            ResetInputValues();
-            edited = false;
+            Despesa.current.dataToSave.AdicionarLista(item);
+            Salvar.SaveItems();
         }
     }
     public void SairEdicao()
     {
+        edited = false;
+        ScenesManagment.Instance.LeaveEditScene();
+        ResetInputValuesFromScene3();
+        if (!decreasedLimit) Despesa.current.DecreaseCurrentLimit(dataFromItemToEdit.getTotalPrice());
+        decreasedLimit = false;
         Despesa.current.editar = null;
     }
     #endregion
 
     #region Instantiation
-    public void InstantiateSavedItens()
+    public void InstantiateSavedItens(List<Item> items)
     {
         parentItems.DeleteChildren();
+        auxTextSearchItem.gameObject.SetActive(false);
 
-        foreach (Item i in Despesa.current.getItems())
+        foreach (Item i in items)
         {
-            var item = Instantiate(Prefab_item, parentItems);
-            item.name = i.getName();
-            Despesa.current.UpdateLimitValue(i.getTotalPrice());
-            item.GetComponent<ItemDados>().dados = i;
+            var itemObj = Instantiate(Prefab_item, parentItems);
+            itemObj.name = i.getName();
+            Despesa.current.DecreaseCurrentLimit(i.getTotalPrice());
+            itemObj.GetComponent<StoreItemData>().setData(i);
         }
     }
-    private void InstantiateItemsForReport()
+    public void InstantiateItemsForReport(Item item)
     {
-        var result = Despesa.current.getItems().Where(t => t.getInitMonth() == reportMonth && t.getYear() == reportYear).ToArray();
-
-
-        for (int i = 0; i < result.Length; i++)
+        if (item == null)
         {
-            GameObject item;
-            if (result[i].getType() == Item.TipoItem.DESPESA)
-                item = Instantiate(Prefab_reportGasto, parentReports);
-            else
-                item = Instantiate(Prefab_reportExtra, parentReports);
-
-            item.GetComponent<StoreItemData>().Initiate(result[i]);
+            print("Does not exist Items in this month");
+            return;
         }
+
+        GameObject instance;
+        if (item.getType() == Item.TipoItem.DESPESA)
+            instance = Instantiate(Prefab_reportGasto, parentReports);
+        else
+            instance = Instantiate(Prefab_reportExtra, parentReports);
+
+        instance.GetComponent<StoreItemData>().Initiate(item);
+        print(item.getName());
     }
     #endregion
 
@@ -337,41 +423,40 @@ public class DespesaUI : MonoBehaviour
     #region Report
     public void InitReportScene()
     {
-        SetMonthlyPage();
+        setaAnt.getPageParams().maxPages = monthsAvailables;
+        setaProx.getPageParams().maxPages = monthsAvailables;
 
-        if (paginaRelatorio + 1 == monthsAvailables) setaProx.gameObject.SetActive(false);
-        else if (paginaRelatorio == 0) setaAnt.gameObject.SetActive(false);
-        else
-        {
-            setaAnt.gameObject.SetActive(true);
-            setaProx.gameObject.SetActive(true);
-        }
+        setaProx.getPageParams().currentPage = paginaRelatorio;
+        setaAnt.getPageParams().currentPage = paginaRelatorio;
+
+        SetMonthlyPage();
     }
     public void SetMonthlyPage()
     {
         var results = MonthReport();
 
-        monthText.text = Months[reportMonth] + "-" + reportYear.ToString();
-        monthlyCost.text = results[0].ToString().MoneyFormat();
-        monthlySaved.text = results[1].ToString().MoneyFormat();
-        scrollRect.verticalScrollbar.value = 0;
+        monthText.text = $"{Months[reportMonth]} - {reportYear}";
+
+        monthlyCostTotal.text = results[0] > 0 ? results[0].ToString().MoneyFormat() : "R$ 000,00";
+        monthlyCost.text = results[1] > 0 ? results[1].ToString().MoneyFormat() : "R$ 000,00";
+        monthlySaved.text = results[2] > 0 ? results[2].ToString().MoneyFormat() : "R$ 000,00";
+        scrollRect.verticalScrollbar.value = 1;
     }
     private float[] MonthReport()
     {
-        float[] values = new float[2];
-
-        parentReports.localPosition = new Vector3(0, 0, 0);
-        parentReports.GetComponent<RectTransform>().sizeDelta = new Vector2(750, 800);
         parentReports.DeleteChildren();
 
-        InstantiateItemsForReport();
-        values = Despesa.current.CalculateExpenseUntill(paginaRelatorio);
+        float[] values;
+        values = Despesa.current.CalculateExpenseUntill(paginaRelatorio-1, reportMonth, reportYear);
 
         return values;
     }
     public void NextMonth()
     {
         paginaRelatorio++;
+        setaProx.getPageParams().currentPage = paginaRelatorio;
+        setaAnt.getPageParams().currentPage = paginaRelatorio;
+
         reportMonth++;
         if(reportMonth == 13) 
         { 
@@ -380,38 +465,21 @@ public class DespesaUI : MonoBehaviour
         }
 
         SetMonthlyPage();
-
-        if (paginaRelatorio + 1 == monthsAvailables) setaProx.gameObject.SetActive(false);
-        else if (paginaRelatorio == 0) setaAnt.gameObject.SetActive(false);
-        else
-        {
-            setaAnt.gameObject.SetActive(true);
-            setaProx.gameObject.SetActive(true);
-        }
     }
     public void PreviousMonth()
     {
         paginaRelatorio--;
+        setaProx.getPageParams().currentPage = paginaRelatorio;
+        setaAnt.getPageParams().currentPage = paginaRelatorio;
+
         reportMonth--;
-        if(reportMonth == -1)
+        if(reportMonth == 0)
         {
             reportYear--;
             reportMonth = 12;
         }
 
         SetMonthlyPage();
-
-        if (paginaRelatorio + 1 == monthsAvailables) setaProx.gameObject.SetActive(false);
-        else if (paginaRelatorio == 0) setaAnt.gameObject.SetActive(false);
-        else
-        {
-            setaAnt.gameObject.SetActive(true);
-            setaProx.gameObject.SetActive(true);
-        }
-    }
-    public void LeaveReport()
-    {
-        ResetInputValues();
     }
     public void ShowExtraInfo(Vector3 position, int month, bool credit, bool isTest, bool isMonthly)
     {

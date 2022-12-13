@@ -30,6 +30,8 @@ public class KeyboardPad : UIButton, IPointerDownHandler, IPointerUpHandler, IPo
         base.Init();
         ObjectRef = gameObject;
         setFunctions();
+
+        if (function == KeyboardFunction.CapsLock) Keyboard.capslock = this;
     }
     public override void getUiButton()
     {
@@ -42,22 +44,23 @@ public class KeyboardPad : UIButton, IPointerDownHandler, IPointerUpHandler, IPo
         func f2 = Keyboard.Instance.Backspace;
         func f3 = Keyboard.Instance.Typing;
         func f4 = GameManager.Instance.LeaveInputSection;
+        func f5 = Keyboard.Instance.Clear;
 
         functions = new Dictionary<KeyboardFunction, func>()
             {   { KeyboardFunction.CapsLock, f1},
                 { KeyboardFunction.Backspace, f2},
                 { KeyboardFunction.Write, f3},
                 { KeyboardFunction.Space, f3},
-                { KeyboardFunction.Enter, f4}
+                { KeyboardFunction.Enter, f4},
+                { KeyboardFunction.Clear, f5}
             };
     }
     public async void Function()
     {
         if (functions == null) setFunctions();
 
-        //functions[function](textToWrite);
         functions[function](textToWrite); 
-        await Task.Delay(250, m_TokenSource.Token);
+        await Task.Delay(300, m_TokenSource.Token);
         if(m_TokenSource.IsCancellationRequested) return;
 
         if(numClicks > 1) { numClicks = 1; return; }
@@ -77,13 +80,13 @@ public class KeyboardPad : UIButton, IPointerDownHandler, IPointerUpHandler, IPo
             Keyboard.holding = true;
 
         Selected();
+        Function(); 
         Transformations();
-        Function();
     }
     void IPointerUpHandler.OnPointerUp(PointerEventData eventData)
     {
-        Unselected();
         Keyboard.holding = false;
+        Unselected();
     }
 
 

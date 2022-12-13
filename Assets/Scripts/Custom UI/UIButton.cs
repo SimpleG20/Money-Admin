@@ -45,6 +45,7 @@ public abstract class UIButton : UIElement
             else LeanTween.scale(gameObject, Vector2.one * scaleSize, 0.15f).setOnComplete(BackNormalScale);
         }
         if (useRipple) SetRipple();
+
         ChangeHighlights();
     }
     protected void SetRipple()
@@ -86,7 +87,11 @@ public abstract class UIButton : UIElement
         }
         else
         {
-            await Task.Delay(750, m_TokenSource.Token);
+            if (Keyboard.fixedUpper) return;
+
+            EnableHighlight();
+            await Task.Delay(500, m_TokenSource.Token);
+
             if (m_TokenSource.IsCancellationRequested) return;
             DisabledHighlight();
         }

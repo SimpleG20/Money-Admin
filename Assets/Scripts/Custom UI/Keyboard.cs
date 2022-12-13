@@ -4,22 +4,37 @@ using System.Text;
 using UnityEngine;
 using TMPro;
 using static Enums;
+using System.Linq;
+using System;
 
 public class Keyboard : UIElement
 {
     public static bool holding, waitingInput;
-    private static bool toUpper = false;
+    public static bool leave;
+    public static bool fixedUpper;
+    private static bool _toUpper, keyboardShowing;
+    private static bool toUpper
+    {
+        get => _toUpper;
+        set
+        {
+            _toUpper = value;
+            ChangeLettersSize(value);
+        }
+    }
     private static TypeInputValue typeInput;
 
     private static UITextInput inputField;
     private static InputValue inputValue;
 
     [SerializeField] UIElement iconsGroup;
-    [SerializeField] List<UIButton> letters;
-    [SerializeField] List<UIButton> numbers;
 
-    public static bool leave;
-    private static List<UIElement> linkedElements = new List<UIElement>();
+    static Transform _transform;
+    static List<UIElement> linkedElements = new List<UIElement>();
+
+    public static KeyboardPad capslock;
+    static List<KeyboardPad> letters;
+    static List<KeyboardPad> numbers;
 
     private static Keyboard _instance;
     public static Keyboard Instance
@@ -31,9 +46,31 @@ public class Keyboard : UIElement
         }
     }
 
+    private void Awake()
+    {
+        _transform = transform;
+    }
+
+    private void Update()
+    {
+        if (keyboardShowing)
+        {
+            if (Input.GetKeyDown(KeyCode.Backspace)) { Backspace(""); return; }
+            else if (Input.GetKeyDown(KeyCode.Space)) { Typing("-"); return; }
+            else if (Input.GetKeyDown(KeyCode.CapsLock)) { CapsLock(""); return; }
+            else if (Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Return)) { GameManager.Instance.LeaveInputSection(); return; }
+            if (Input.anyKeyDown)
+            {
+                Typing(Input.inputString);
+            }
+        }
+    }
+
+    #region Visualization
     public bool ShowKeyboard(TypeInputValue type, UITextInput _input, InputValue _inputValue, List<GameObject> elements)
     {
         //groupPrevValue = iconsGroup.getCanvasGroup().alpha;
+        keyboardShowing = true;
         leave = false;
 
         linkedElements.Clear();
@@ -52,10 +89,10 @@ public class Keyboard : UIElement
         inputValue = _inputValue;
         return (inputField != null && inputValue != null);
     }
-
     public void HideKeyboard()
     {
         if (!animator.enabled) animator.enabled = true;
+        keyboardShowing = false;
         leave = true;
         //if (groupPrevValue == 1) iconsGroup.ShowUi();
 
@@ -72,38 +109,47 @@ public class Keyboard : UIElement
         if (animator.enabled) animator.enabled = false;
         transform.position = Input.mousePosition;
     }
+    #endregion
 
     #region Functions
     public void CapsLock(string s)
     {
-        toUpper = !toUpper;
-        if (toUpper)
-        {
-            foreach (UIButton ui in letters) ui.setLabel(ui.getLabel().ToUpper());
-        }
-        else
-        {
-            foreach (UIButton ui in letters) ui.setLabel(ui.getLabel().ToLower());
-        }
+        if (fixedUpper) { fixedUpper = toUpper = false; capslock.DisabledHighlight(); }
+        else if (toUpper) { fixedUpper = true; capslock.EnableHighlight(); }
+        else toUpper = true;
     }
     public void Backspace(string s)
     {
         StringBuilder builder = new StringBuilder(inputField.getInputString());
-        if (builder.ToString().Length - 1 >= 0 && builder.ToString() != "...")
+        if (builder.ToString() == "..." || builder.ToString() == "") return;
+        
+        if (builder.ToString().Length - 1 >= 0)
         {
             builder.Remove(builder.Length - 1, 1);
             SetInputValue(builder.ToString());
         }
 
-        if (builder.ToString() == "" || builder.ToString() == "...")
+        if (builder.ToString() == "")
         {
-            inputField.getInputGhostOB().SetActive(false);
+            inputField.DisableContinueWriting();
             inputField.setInputText("...");
-            inputField.WaitingInput();
+            inputField.CheckInputText();
             return;
         }
 
         inputField.ChangingInputsTexts(builder.ToString());
+    }
+    public void Clear(string s)
+    {
+        StringBuilder builder = new StringBuilder(inputField.getInputString());
+        if (builder.ToString().Length - 1 >= 0 && builder.ToString() != "...")
+        {
+            builder.Clear();
+            SetInputValue(builder.ToString());
+        }
+
+        inputField.setInputText("...");
+        inputField.CheckInputText();
     }
     public void Typing(string s)
     {
@@ -120,6 +166,8 @@ public class Keyboard : UIElement
 
         //print(builder.ToString());
         inputField.ChangingInputsTexts(builder.ToString());
+
+        if (toUpper && !fixedUpper) toUpper = false;
         SetInputValue(builder.ToString());
     }
     private void SetInputValue(string s)
@@ -146,26 +194,39 @@ public class Keyboard : UIElement
     }
     #endregion
 
+    private static void ChangeLettersSize(bool value)
+    {
+        if (letters == null) letters = _transform.GetChild(2).getChildsWithComponentT<KeyboardPad>();
+
+        letters = letters.Where(t => t.getType() == KeyboardFunction.Write).ToList();
+
+        if(value)
+            foreach (UIButton ui in letters) ui.setLabel(ui.getLabel().ToUpper());
+        else
+            foreach (UIButton ui in letters) ui.setLabel(ui.getLabel().ToLower());
+    }
     private bool InputTextLimit(string input, string toAppend)
     {
         var length = input.Length;
+
+        if (typeInput == TypeInputValue.String)
+        {
+            if (length > 30) return false;
+        }
+        else
+        {
+            char c = toAppend[0];
+            if (typeInput == TypeInputValue.Int)
+            { if (length > 10 || !Char.IsDigit(c)) return false; }
+            else
+            { if (length > 12 || (!Char.IsDigit(c) && c != ',')) return false; }
+        }
+
         if (input.Contains(","))
         {
             if (length - input.IndexOf(",") >= 3) return false;
             if (toAppend == "," && typeInput == TypeInputValue.Float) return false;
             if (typeInput == TypeInputValue.Int) return false;
-        }
-        else
-        {
-            if(typeInput == TypeInputValue.String)
-            {
-                if (length > 30) return false;
-            }
-            else
-            {
-                if (length > 10 && typeInput == TypeInputValue.Int) return false;
-                if (length > 12 && typeInput == TypeInputValue.Float) return false;
-            }
         }
         return true;
     }

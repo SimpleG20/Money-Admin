@@ -16,8 +16,8 @@ public class StoreItemData : MonoBehaviour
         if(data == null) data = item;
 
         nameTxt.text = data.getName();
-        if(valueTxt != null) 
-            valueTxt.text = data.getShowMonthlyPrice() ? data.getMonthlyPriceFormated() : data.getTotalPriceFormated();
+        if (valueTxt != null)
+            valueTxt.text = data.getShowMonthlyPrice() ? data.getMonthlyPriceMoneyFormat() : data.getTotalPriceMoneyFormat();
         if(parcelsTxt != null)
             parcelsTxt.text = $"{data.getParcels()}x";
 
@@ -31,19 +31,34 @@ public class StoreItemData : MonoBehaviour
             iconType.color = color;
         }
     }
-    public void setData(Item item) => data = item;
+    public void setData(Item item)
+    {
+        data = item;
+        Initiate(data);
+    }
     public Item getData() => data;
 
-    public void ShowExtraInfo()
+    public void ShowExtraInfoInScene4()
     {
         DespesaUI.current.ShowExtraInfo(transform.position, data.getInitMonth(), data.getUseCreditCard(), data.getIsTest(), data.getIsMonthly());
     }
-    public void ShowItemDataToEdit()
+    public void ShowItemDataToEditInScene3()
     {
-        DespesaUI.current.EditarItem(true);
+        Despesa.current.editar = this;
+        DespesaUI.current.EditItem();
+    }
+    [ContextMenu("Show Price Details")]
+    public void ShowItemPriceInScene2()
+    {
+        nameTxt.gameObject.SetActive(!nameTxt.gameObject.activeSelf);
+        parcelsTxt.gameObject.SetActive(!parcelsTxt.gameObject.activeSelf);
+        valueTxt.gameObject.SetActive(!valueTxt.gameObject.activeSelf);
     }
     public void RemoveItem()
     {
-        
+        if (Despesa.current.RemoveFromList(data))
+        {
+            Destroy(gameObject);
+        }
     }
 }

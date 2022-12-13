@@ -2,10 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
+using UnityEngine.Events;
+using UnityEngine;
 using static Enums;
 
 public class UIType : UIButton, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler
@@ -94,12 +93,7 @@ public class UIType : UIButton, IPointerClickHandler, IPointerDownHandler, IPoin
     #region Click Events
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
     {
-        if (!interactable || typeUi == TypesUI.HOLD) return;
-
-        numClicks++;
-        Transformations();
-
-        genericClick[typeUi]();
+        ClickFunction();
     }
     void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
     {
@@ -114,7 +108,15 @@ public class UIType : UIButton, IPointerClickHandler, IPointerDownHandler, IPoin
         if (typeUi == TypesUI.HOLD) holdBtParams.setRelease(true);
     }
 
+    public void ClickFunction()
+    {
+        if (!interactable || typeUi == TypesUI.HOLD) return;
 
+        numClicks++;
+        Transformations();
+
+        genericClick[typeUi]();
+    }
     protected override IEnumerator WaitStopHolding()
     {
         yield return new WaitUntil(() => !Keyboard.holding);
