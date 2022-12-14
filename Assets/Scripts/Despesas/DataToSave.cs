@@ -35,7 +35,7 @@ public class InputsToSave
         renda           = Despesa.current.inputsToSave.renda;
         dinheiroInicial = Despesa.current.inputsToSave.dinheiroInicial;
         limite          = Despesa.current.inputsToSave.limite;
-        limiteAtual     = DespesaUI.current.currentLimit;
+        limiteAtual     = Despesa.current.inputsToSave.limiteAtual;
         juros           = Despesa.current.inputsToSave.juros;
     }
 }

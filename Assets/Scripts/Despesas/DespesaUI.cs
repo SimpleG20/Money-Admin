@@ -13,7 +13,7 @@ public class DespesaUI : MonoBehaviour
 {
     #region Aux Variables
     public bool edited;
-    private int monthsAvailables;
+    public int monthsAvailables;
     private CancellationTokenSource tokenSource;
 
     #region Consts
@@ -45,9 +45,11 @@ public class DespesaUI : MonoBehaviour
             if (value < 0) return;
 
             _currentLimit = Mathf.Round(value * 100f) / 100f;
+            Despesa.current.setCurrentLimit(_currentLimit);
             creation_limitText.text = _currentLimit.ToString().MoneyFormat();
         }
     }
+
     public float limit
     {
         get => inputLimit.getInputValue().floatValue;
@@ -55,6 +57,7 @@ public class DespesaUI : MonoBehaviour
         {
             if (value <= 0) return;
             value = Mathf.Round(value * 100f) / 100f;
+            Despesa.current.setDefaultLimit(value);
             inputLimit.setPlaceholder(value.ToString(), TypeInputValue.Float, true);
         }
     }
@@ -65,6 +68,7 @@ public class DespesaUI : MonoBehaviour
         {
             if(value == 0) return;
             value = Mathf.Round(value * 100f) / 100f;
+            Despesa.current.setIncomePerMonth(value);
             inputIncome.setPlaceholder(value.ToString(), TypeInputValue.Float, true);
         } 
     }
@@ -75,6 +79,7 @@ public class DespesaUI : MonoBehaviour
         {
             if (value == 0) return;
             value = Mathf.Round(value * 100f) / 100f;
+            Despesa.current.setInitMoney(value);
             inputStored.setPlaceholder(value.ToString(), TypeInputValue.Float, true);
         }
     }
@@ -85,6 +90,7 @@ public class DespesaUI : MonoBehaviour
         {
             if (value == 0) return;
             value = Mathf.Round(value * 100f) / 100f;
+            Despesa.current.setFees(value);
             inputFees.setPlaceholder(value.ToString().CheckCommaSituation(), TypeInputValue.Float);
         }
     }
@@ -134,7 +140,7 @@ public class DespesaUI : MonoBehaviour
     private bool showMonthlyPrice
     {
         get => creation_tgMonthlyPrice.isOn;
-        set => creation_tgMonthlyPrice.isOn = true;
+        set => creation_tgMonthlyPrice.isOn = value;
     }
     private bool testItem
     {
@@ -203,27 +209,33 @@ public class DespesaUI : MonoBehaviour
     {
         current = this;
         tokenSource = new CancellationTokenSource();
+
+        reportYear = DateTime.Now.Year;
+        var currentMonth = DateTime.Now.Month;
+        reportMonth = currentMonth;
     }
     public void Initialize()
     { 
         paginaRelatorio = 1;
-        monthsAvailables = 1;
-        reportYear = DateTime.Now.Year;
-        var currentMonth = DateTime.Now.Month;
-        reportMonth = currentMonth;
 
-        creation_tgInitMonth[currentMonth - 1].isOn = true;
-        Despesa.current.setCurrentMonth(currentMonth);
+        creation_tgInitMonth[reportMonth - 1].isOn = true;
     }
 
     #region Function for Input
-    public void UpdateInputsFromScene2(float _limit, float _currentLmit, float _income, float _initMoney, float _fees)
+    public void UpdateInputsFromScene2(float _limit, float currentLimit, float _income, float _initMoney, float _fees)
     {
         print($"Limite: {limit = _limit}");
-        print($"Limite Atual: {currentLimit = _currentLimit}");
+        print($"Limite Atual: {this.currentLimit = currentLimit}");
         print($"Renda: {income = _income}");
         print($"Inicial: {initMoney = _initMoney}");
         print($"Juros: {fees = _fees}");
+    }
+    public void ReasureInputs()
+    {
+        limit = limit;
+        income = income;
+        initMoney = initMoney;
+        fees = fees;
     }
     private void UpdateInputsTextFromScene3(Item dados)
     {
@@ -254,7 +266,7 @@ public class DespesaUI : MonoBehaviour
 
         showMonthlyPrice = false;
         isMonthlyItem = false;
-        testItem = true;
+        showMonthlyPrice = false;
         initMonthItem = Despesa.current.getCurrentMonth() - 1;
         testItem = false;
     }
@@ -276,10 +288,10 @@ public class DespesaUI : MonoBehaviour
     {
         Item item = CreateItem();
         if(item == null)
-        {
             return;
-        }
+
         Despesa.current.AddToList(item);
+
         monthsAvailables = item.getParcels() > monthsAvailables ? item.getParcels() : monthsAvailables;
         ShowWarning(SUCESSO);
         
@@ -292,20 +304,27 @@ public class DespesaUI : MonoBehaviour
             ShowWarning(ERRO_MISSING_INFO, 1500);
             return null;
         }
+
         int id;
         if (Despesa.current.idAvaliables.Count > 0)
         {
             id = Despesa.current.idAvaliables.PickRandom();
             Despesa.current.idAvaliables.Remove(id);
         }
-        else id = Despesa.current.getLastID();
-        Item item = new Item(nameItem, id, typeItem, testItem, showMonthlyPrice, isMonthlyItem, typeExpenseItem, priceItem, parcelsItem, initMonthItem, false);
+        else
+        {
+            id = Despesa.current.getLastID();
+            Despesa.current.IncreaseLastID();
+        }
+        Item item = new(nameItem, id, typeItem, testItem, showMonthlyPrice, isMonthlyItem, typeExpenseItem, priceItem, parcelsItem, initMonthItem, false);
 
         if (!item.DiscountInCurrentLimit())
         {
             ShowWarning(ERRO_ESTOURO);
+            Despesa.current.DeacreaseLastID();
             return null;
         }
+
         if (!item.getIsTest())
         {
             Despesa.current.dataToSave.AdicionarLista(item);
@@ -359,8 +378,8 @@ public class DespesaUI : MonoBehaviour
             return;
         }
 
-        if (decreasedLimit) Despesa.current.RemoveFromList(Despesa.current.getItems().Find(t => t.getId() == dataFromItemToEdit.getId()));
-        else Despesa.current.getItems().Remove(Despesa.current.getItems().Find(t => t.getId() == dataFromItemToEdit.getId()));
+        if (decreasedLimit) Despesa.current.RemoveFromList(Despesa.current.getItems().FindLast(t => t.getId() == dataFromItemToEdit.getId()));
+        else Despesa.current.getItems().Remove(Despesa.current.getItems().FindLast(t => t.getId() == dataFromItemToEdit.getId()));
         Despesa.current.AddToList(item);
 
         ShowWarning(SUCESSO);
@@ -414,7 +433,7 @@ public class DespesaUI : MonoBehaviour
             instance = Instantiate(Prefab_reportExtra, parentReports);
 
         instance.GetComponent<StoreItemData>().Initiate(item);
-        print(item.getName());
+        //print($"Item Instanciado: {item.getName()}");
     }
     #endregion
 
@@ -437,9 +456,9 @@ public class DespesaUI : MonoBehaviour
 
         monthText.text = $"{Months[reportMonth]} - {reportYear}";
 
-        monthlyCostTotal.text = results[0] > 0 ? results[0].ToString().MoneyFormat() : "R$ 000,00";
-        monthlyCost.text = results[1] > 0 ? results[1].ToString().MoneyFormat() : "R$ 000,00";
-        monthlySaved.text = results[2] > 0 ? results[2].ToString().MoneyFormat() : "R$ 000,00";
+        monthlyCostTotal.text = results[0] > 0 ? results[0].ToString("F2").MoneyFormat() : "R$ 000,00";
+        monthlyCost.text = results[1] > 0 ? results[1].ToString("F2").MoneyFormat() : "R$ 000,00";
+        monthlySaved.text = results[2] > 0 ? results[2].ToString("F2").MoneyFormat() : "R$ 000,00";
         scrollRect.verticalScrollbar.value = 1;
     }
     private float[] MonthReport()
@@ -483,9 +502,10 @@ public class DespesaUI : MonoBehaviour
     }
     public void ShowExtraInfo(Vector3 position, int month, bool credit, bool isTest, bool isMonthly)
     {
-        obj_extraInfo.transform.position = position;
-        obj_extraInfo.SetActive(true);
-
+        var percentX = position.x / Screen.width;
+        var percentY = position.y / Screen.height;
+        obj_extraInfo.GetComponent<RectTransform>().anchorMax = new Vector2(percentX, percentY);
+        obj_extraInfo.GetComponent<RectTransform>().anchorMin = new Vector2(percentX, percentY);
         obj_extraInfo.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = $"Inicio: {MonthsAbv[month]}";
 
         #region Use Credit Card
@@ -508,6 +528,8 @@ public class DespesaUI : MonoBehaviour
         color.a = isMonthly ? 1 : 0.5f;
         obj_extraInfo.transform.GetChild(3).GetComponent<Image>().color = color;
         #endregion
+
+        obj_extraInfo.GetComponent<UIElement>().ShowUi();
     }
     #endregion
 }

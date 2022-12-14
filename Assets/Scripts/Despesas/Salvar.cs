@@ -92,12 +92,13 @@ public static class Salvar
             SaveInputs();
             return false;
         }
-        else if( itemsData == null)
+        else if(itemsData == null)
         {
             Debug.Log("Items Novo Salvamento");
 
             Despesa.current.dataToSave = new AuxDataToSave();
             Despesa.current.dataToSave.itens = new List<Item>();
+            Despesa.current.inputsToSave.ConvertInputs(inputsData);
 
             SaveItems();
             return false;
@@ -107,6 +108,7 @@ public static class Salvar
             Debug.Log("Inputs Novo Salvamento");
 
             Despesa.current.inputsToSave = new AuxInputsToSave();
+            Despesa.current.dataToSave.ConvertToItems(itemsData);
 
             SaveInputs();
             return false;
@@ -114,7 +116,7 @@ public static class Salvar
         else
         {
             Debug.Log("Carregado Com Sucesso");
-            Despesa.current.dataToSave.ConvertArrayToList(itemsData);
+            Despesa.current.dataToSave.ConvertToItems(itemsData);
             Despesa.current.inputsToSave.ConvertInputs(inputsData);
             return true;
         }

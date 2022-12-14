@@ -9,6 +9,7 @@ public class StoreItemData : MonoBehaviour
     [SerializeField] TextMeshProUGUI nameTxt, valueTxt, parcelsTxt;
     [SerializeField] Image iconType;
     [SerializeField] UIButton Bt_showPrice, Bt_edit, Bt_removeItem;
+    [SerializeField] Transform extraInfoTransform;
     private Item data;
 
     public void Initiate(Item item)
@@ -40,7 +41,7 @@ public class StoreItemData : MonoBehaviour
 
     public void ShowExtraInfoInScene4()
     {
-        DespesaUI.current.ShowExtraInfo(transform.position, data.getInitMonth(), data.getUseCreditCard(), data.getIsTest(), data.getIsMonthly());
+        DespesaUI.current.ShowExtraInfo(extraInfoTransform.position, data.getInitMonth(), data.getUseCreditCard(), data.getIsTest(), data.getIsMonthly());
     }
     public void ShowItemDataToEditInScene3()
     {
@@ -58,6 +59,7 @@ public class StoreItemData : MonoBehaviour
     {
         if (Despesa.current.RemoveFromList(data))
         {
+            Salvar.SaveItems();
             Destroy(gameObject);
         }
     }

@@ -91,6 +91,8 @@ public class Keyboard : UIElement
     }
     public void HideKeyboard()
     {
+        SetInputValue(inputField.getInputString());
+
         if (!animator.enabled) animator.enabled = true;
         keyboardShowing = false;
         leave = true;
@@ -215,6 +217,8 @@ public class Keyboard : UIElement
         }
         else
         {
+            if (toAppend.Length <= 0) return false;
+
             char c = toAppend[0];
             if (typeInput == TypeInputValue.Int)
             { if (length > 10 || !Char.IsDigit(c)) return false; }

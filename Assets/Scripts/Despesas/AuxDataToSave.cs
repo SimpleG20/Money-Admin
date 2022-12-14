@@ -10,19 +10,30 @@ public class AuxDataToSave
 
     public void AdicionarLista(Item item)
     {
-        var data = Despesa.current.dataToSave;
-        if (data.itens == null) data.itens = new List<Item>();
+        if (Despesa.current.dataToSave.itens == null) Despesa.current.dataToSave.itens = new List<Item>();
 
-        foreach (Item i in data.itens)
-        {
-            if (i.getId() == item.getId() || i.getName() == item.getName()) { data.itens.Remove(i); break; }
-        }
+        Despesa.current.dataToSave.itens = RemoveDoubles(Despesa.current.dataToSave.itens, item);
 
-        data.itens.Add(item);
-        data.tamanhoMatriz = data.itens.Count;
+        Despesa.current.dataToSave.itens.Add(item);
+        Debug.Log($"Itens: {Despesa.current.dataToSave.tamanhoMatriz = Despesa.current.dataToSave.itens.Count}");
     }
 
-    public void ConvertArrayToList(DataToSave savedData)
+    private List<Item> RemoveDoubles(List<Item> data, Item item)
+    {
+        var repeated = data.Where(t => t.getId() == item.getId()).ToList();
+        while(repeated.Count > 1)
+        {
+            //Debug.Log($"{repeated.Count}");
+            //Debug.Log($"{repeated[0].getName()}");
+
+            data.Remove(repeated[repeated.Count-1]);
+            repeated.RemoveAt(repeated.Count-1);
+        }
+
+        return data;
+    }
+
+    public void ConvertToItems(DataToSave savedData)
     {
         Despesa.current.dataToSave.itens = new List<Item>();
 
@@ -34,6 +45,14 @@ public class AuxDataToSave
                                 (int)savedData.matriz_itens[i, 4], savedData.matriz_itens[i, 5], 
                                 (int)savedData.matriz_itens[i, 6], (int)savedData.matriz_itens[i, 7], true);
             Despesa.current.dataToSave.itens.Add(item);
+        }
+
+        int j = 0;
+
+        while(j < Despesa.current.dataToSave.itens.Count)
+        {
+            Despesa.current.dataToSave.itens = RemoveDoubles(Despesa.current.dataToSave.itens, Despesa.current.dataToSave.itens[j]);
+            j++;
         }
     }
     public static void ConvertListToArray(out float[,] matriz, out string[] nomes, out int tam)
@@ -78,12 +97,12 @@ public class AuxInputsToSave
 
     public void ConvertInputs(InputsToSave inputsSaved)
     {
-        Despesa.current.inputsToSave.limite = inputsSaved.limite;
-        Despesa.current.inputsToSave.limiteAtual = DespesaUI.current.currentLimit = inputsSaved.limiteAtual;
-        Despesa.current.inputsToSave.renda = inputsSaved.renda;
-        Despesa.current.inputsToSave.dinheiroInicial = inputsSaved.dinheiroInicial;
-        Despesa.current.inputsToSave.juros = inputsSaved.juros;
-        Despesa.current.inputsToSave.lastUsedID = inputsSaved.lastUsedID;
-        Despesa.current.idAvaliables = inputsSaved.ids.ToList() == null ? new List<int>() : inputsSaved.ids.ToList();
+        Despesa.current.inputsToSave.limite                                         = inputsSaved.limite;
+        Despesa.current.inputsToSave.limiteAtual = DespesaUI.current.currentLimit   = inputsSaved.limiteAtual;
+        Despesa.current.inputsToSave.renda                                          = inputsSaved.renda;
+        Despesa.current.inputsToSave.dinheiroInicial                                = inputsSaved.dinheiroInicial;
+        Despesa.current.inputsToSave.juros                                          = inputsSaved.juros;
+        Despesa.current.inputsToSave.lastUsedID                                     = inputsSaved.lastUsedID;
+        Despesa.current.idAvaliables                                                = inputsSaved.ids.ToList() == null ? new List<int>() : inputsSaved.ids.ToList();
     }
 }

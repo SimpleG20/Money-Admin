@@ -57,7 +57,7 @@ public class Item
             totalPrice = price;
             monthlyPrice = Mathf.Round(totalPrice / parcels * 100f) / 100f;
         }
-        Debug.Log($"ITEM {name} - {totalPrice}");
+
         this.parcels = parcels;
 
         if (initMonth < Despesa.current.getCurrentMonth())
@@ -70,8 +70,16 @@ public class Item
             this.initMonth = initMonth;
             year = DateTime.Now.Year;
         }
-        lastMonth = parcels > 12 ? initMonth + (parcels % 12) : initMonth + parcels;
-        lastMonth = lastMonth > 12 ? 12 - lastMonth : lastMonth;
+
+        if (initMonth + parcels > 12)
+        {
+            lastMonth = initMonth + (parcels % 12);
+            while(lastMonth > 12)
+            {
+                lastMonth = (lastMonth % 12);
+            }
+        }
+        else lastMonth = initMonth + parcels;
 
         lastYear = (int)Mathf.Floor(parcels / 12) + year;
     }
@@ -83,7 +91,8 @@ public class Item
     public int getParcels() => parcels;
     public int getInitMonth() => initMonth;
     public int getLastMonth() => lastMonth;
-    public int getYear() => year;
+    public int getInitYear() => year;
+    public int getLastYear() => lastYear;
     public float getTotalPrice() => totalPrice;
     public float getMonthlyPrice() => monthlyPrice;
     public bool getUseCreditCard() => creditCard;
@@ -98,9 +107,9 @@ public class Item
     public void setIsTest(bool value) => isTest = value;
     #endregion
 
-    private void PrintItem()
+    public void PrintItem()
     {
-        Debug.Log($"Item \n{name} ID: {id} Tipo: {type} " +
+        Debug.Log($"Item {name} ID: {id} Tipo: {type} " +
             $"Cartao: {creditCard} Mensal: {isMonthly}" +
             $"Preco Mensal Armazenado: {storeMothlyPrice}" +
             $"Preco Total: {totalPrice} Preco Mensal : {monthlyPrice}" +
@@ -113,7 +122,7 @@ public class Item
     }
     public bool DiscountInCurrentLimit()
     {
-        if (totalPrice > DespesaUI.current.currentLimit) return false;
+        if (totalPrice > Despesa.current.getCurrentLimit()) return false;
 
         if (!isMonthly && creditCard && type == TipoItem.DESPESA) 
         { 

@@ -79,14 +79,6 @@ public abstract class UIButton : UIElement
         OthersHighlights();
         if (toggle)
         {
-            if (highlightEnabled)
-            {
-                DisabledHighlight();
-            }
-            else EnableHighlight();
-        }
-        else
-        {
             if (Keyboard.fixedUpper) return;
 
             EnableHighlight();
@@ -94,6 +86,14 @@ public abstract class UIButton : UIElement
 
             if (m_TokenSource.IsCancellationRequested) return;
             DisabledHighlight();
+        }
+        else
+        {
+            if (highlightEnabled)
+            {
+                DisabledHighlight();
+            }
+            else EnableHighlight();
         }
     }
     internal void EnableHighlight()
