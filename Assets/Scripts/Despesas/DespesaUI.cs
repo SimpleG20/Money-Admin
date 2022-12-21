@@ -46,7 +46,7 @@ public class DespesaUI : MonoBehaviour
 
             _currentLimit = Mathf.Round(value * 100f) / 100f;
             Despesa.current.setCurrentLimit(_currentLimit);
-            creation_limitText.text = _currentLimit.ToString().MoneyFormat();
+            creation_limitText.text = _currentLimit.ToString().MoneyFormatForString();
         }
     }
 
@@ -162,6 +162,7 @@ public class DespesaUI : MonoBehaviour
     #endregion
 
     #region UI and some variables
+    [SerializeField] TextMeshProUGUI currentLimitPopUp;
 
     [Header("Part 2")]
     #region
@@ -219,6 +220,16 @@ public class DespesaUI : MonoBehaviour
         paginaRelatorio = 1;
 
         creation_tgInitMonth[reportMonth - 1].isOn = true;
+    }
+
+    public void ChangeTextOfCalculationScene2(float expense, float saved)
+    {
+        totalExpenseTxt.text = expense.MoneyFormatForNumber();
+        totalSavedTxt.text = saved.MoneyFormatForNumber();
+    }
+    public void CurrentLimitTextPopUp()
+    {
+        currentLimitPopUp.text = currentLimit.MoneyFormatForNumber();
     }
 
     #region Function for Input
@@ -456,9 +467,9 @@ public class DespesaUI : MonoBehaviour
 
         monthText.text = $"{Months[reportMonth]} - {reportYear}";
 
-        monthlyCostTotal.text = results[0] > 0 ? results[0].ToString("F2").MoneyFormat() : "R$ 000,00";
-        monthlyCost.text = results[1] > 0 ? results[1].ToString("F2").MoneyFormat() : "R$ 000,00";
-        monthlySaved.text = results[2] > 0 ? results[2].ToString("F2").MoneyFormat() : "R$ 000,00";
+        monthlyCostTotal.text = results[0] > 0 ? results[0].ToString("F2").MoneyFormatForString() : "R$ 000,00";
+        monthlyCost.text = results[1] > 0 ? results[1].ToString("F2").MoneyFormatForString() : "R$ 000,00";
+        monthlySaved.text = results[2] > 0 ? results[2].ToString("F2").MoneyFormatForString() : "R$ 000,00";
         scrollRect.verticalScrollbar.value = 1;
     }
     private float[] MonthReport()

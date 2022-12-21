@@ -118,7 +118,11 @@ public static class Extensions
         }
         return text;
     }
-    public static string MoneyFormat(this string text)
+    public static string MoneyFormatForNumber(this float number)
+    {
+        return number.ToString().MoneyFormatForString();
+    }
+    public static string MoneyFormatForString(this string text)
     {
         var builder = new StringBuilder();
         builder.Append("R$ ");

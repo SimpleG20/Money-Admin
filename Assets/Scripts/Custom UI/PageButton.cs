@@ -59,7 +59,7 @@ public class PageButton : AbstractButton
         currentPage += direction;
         other.currentPage = currentPage;
 
-        pages[currentPage].GetComponent<UIElement>().ShowUi();
+        pages[currentPage - 1].GetComponent<UIElement>().ShowUi();
     }
     private void SinglePage()
     {

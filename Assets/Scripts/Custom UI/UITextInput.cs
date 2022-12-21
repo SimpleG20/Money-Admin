@@ -105,7 +105,7 @@ public class UITextInput : UIElement, IPointerClickHandler
             return;
         }
 
-        if (money) s = s.MoneyFormat();
+        if (money) s = s.MoneyFormatForString();
 
         placeholder.text = s;
         placeholderString = s;

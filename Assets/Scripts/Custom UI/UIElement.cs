@@ -12,6 +12,7 @@ public class UIElement : MonoBehaviour
     protected CanvasGroup canvasGroup;
     protected bool m_hasAnimator = true;
     protected bool start = false;
+    private bool shown = false;
 
     public TextMeshProUGUI labelComponent;
     [SerializeField] protected bool hasLabel;
@@ -86,6 +87,12 @@ public class UIElement : MonoBehaviour
     #endregion
 
     #region Animation
+    public void ToggleUiVisualization()
+    {
+        shown = !shown;
+        if (shown) ShowUi();
+        else HideUi();
+    }
     public void ShowUi()
     {
         EnableElement();

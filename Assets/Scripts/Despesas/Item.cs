@@ -99,8 +99,8 @@ public class Item
     public bool getIsMonthly() => isMonthly;
     public bool getExtraAdded() => extraAdded;
     public bool getIsTest() => isTest;
-    public string getMonthlyPriceMoneyFormat() => monthlyPrice.ToString().MoneyFormat();
-    public string getTotalPriceMoneyFormat() => totalPrice.ToString().MoneyFormat();
+    public string getMonthlyPriceMoneyFormat() => monthlyPrice.ToString().MoneyFormatForString();
+    public string getTotalPriceMoneyFormat() => totalPrice.ToString().MoneyFormatForString();
 
     public bool getShowMonthlyPrice() => storeMothlyPrice;
     public void setExtraAdded(bool value) => extraAdded = value;

@@ -24,7 +24,7 @@ public class Despesa : MonoBehaviour
     float currentLimit;
     float fees;
     
-    float dinheiroPoupanca;
+    float moneySaved;
 
     float cardExpense;
     float moneyExpense;
@@ -137,15 +137,21 @@ public class Despesa : MonoBehaviour
     }
     #endregion
 
-    #region Calculation
-    public float[] CalculateExpenseUntill(int amountMonths, int month, int year)
+    bool IsItemListNull()
     {
         if (ItemsList == null)
         {
             ItemsList = new List<Item>();
             DespesaUI.current.ShowWarning(DespesaUI.ERRO_LISTNULL);
-            return null;
+            return true;
         }
+        return false;
+    }
+
+    #region Calculation
+    public float[] CalculateExpenseUntill(int amountMonths, int month, int year)
+    {
+        if (IsItemListNull()) return new float[] {0,0,0};
 
         float gastoDinheiroAcumulado = 0, gastoDinheiroNoMes = 0;
         float gastoCartaoAcumulado = 0, gastoCartaoNoMes = 0;
@@ -160,7 +166,7 @@ public class Despesa : MonoBehaviour
 
             foreach(Item item in ItemsList)
                 CostPerItemForAcumulative(ref extra, ref gastoDinheiroAcumulado, ref gastoCartaoAcumulado, ref gastoMensal, i, item);
-            sobra += extra + incomePerMonth - gastoMensal;
+            sobra += (extra + incomePerMonth - gastoMensal) * fees;
 
             if(sobra < 0)
             {
@@ -183,7 +189,7 @@ public class Despesa : MonoBehaviour
         float[] results = new float[3];
         results[0] = gastoCartaoAcumulado + gastoDinheiroAcumulado;
         results[1] = gastoCartaoNoMes + gastoDinheiroNoMes;
-        results[2] = sobra;
+        results[2] = sobra * fees;
         //print($"Gasto Acumulado: {}");          //Gasto Acumulado
         //print($"Gasto Mensal: {}");             //Gasto no mes
         //print($"Sobra Mensal: {}");             //Sobra no mes
@@ -191,31 +197,22 @@ public class Despesa : MonoBehaviour
     }
     public void CalculateTotalExpenses()
     {
-        if (ItemsList == null)
-        {
-            ItemsList = new List<Item>();
-            DespesaUI.current.ShowWarning(DespesaUI.ERRO_LISTNULL);
-            return;
-        }
+        if (IsItemListNull()) return;
 
-        float gastoDinheiro = 0;
-        float gastoCartao = 0;
         float extra = 0;
-        float guardado = initMoney;
+        moneySaved = initMoney;
 
         for (int i = 0; i <= amountMonths; i++)
         {
             float gastoMensal = 0;
 
             foreach (Item item in ItemsList) 
-                CostPerItemForAcumulative(ref extra, ref gastoDinheiro, ref gastoCartao,ref gastoMensal, i, item);
-            guardado += (extra + incomePerMonth - gastoMensal);
+                CostPerItemForAcumulative(ref extra, ref moneyExpense, ref cardExpense,ref gastoMensal, i, item);
+            moneySaved += (extra + incomePerMonth - gastoMensal);
         }
 
-        dinheiroPoupanca = guardado;
-        cardExpense = gastoCartao;
-        moneyExpense = gastoDinheiro;
         totalExpense = cardExpense + moneyExpense;
+        DespesaUI.current.ChangeTextOfCalculationScene2(totalExpense, moneySaved);
     }
     private void CostPerItemForAcumulative(ref float extra, ref float gastoDinheiro, ref float gastoCartao, ref float gastoMensal, int i, Item item)
     {
@@ -295,20 +292,8 @@ public class Despesa : MonoBehaviour
     }
     public void RefreshExpensesCalculation()
     {
-        dinheiroPoupanca = initMoney;
+        moneySaved = initMoney;
         totalExpense = cardExpense = moneyExpense = 0;
-        DespesaUI.current.currentLimit = defaultLimit;
-
-        foreach (Item item in ItemsList)
-            item.RemoveFromCurrentLimit();
-    }
-    public void ResetAll()
-    {
-        dinheiroPoupanca = initMoney;
-        totalExpense = cardExpense = moneyExpense = 0;
-        DespesaUI.current.currentLimit = defaultLimit;
-
-        ItemsList.Clear();
     }
     #endregion
 

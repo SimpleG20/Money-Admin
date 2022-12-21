@@ -14,7 +14,7 @@ public class ScenesManagment : MonoBehaviour
     public GameObject leaveEditBt, makeChangeEditBt, addBt;
     [SerializeField] UIElement[] scenes;
     [SerializeField] UIType[] icons;
-    [SerializeField] UIElement backIcons;
+    [SerializeField] UIElement backIcons, limitPopUp;
 
     public static ScenesManagment Instance
     {
@@ -41,7 +41,7 @@ public class ScenesManagment : MonoBehaviour
     public UIElement getCurrentScene() => scenes[currentScene - 1];
     public UIElement[] getScenes() => scenes;
     public UIType[] getIcons() => icons;
-    public void ChangeScene(int index)
+    public async void ChangeScene(int index)
     {
         if (index == -1) { Application.Quit(); return; }
         if (index == currentScene) return;
@@ -50,8 +50,16 @@ public class ScenesManagment : MonoBehaviour
         else ManualProcess(index);
 
         currentScene = index;
-        if (currentScene != 1 && backIcons.getCanvasGroup().alpha != 1) backIcons.ShowUi();
-        else if (currentScene == 1) backIcons.HideUi();
+        if (currentScene != 1 && backIcons.getCanvasGroup().alpha != 1) 
+        { 
+            backIcons.ShowUi();
+            await Task.Delay(500);
+            limitPopUp.EnableElement(); }
+        else if (currentScene == 1) 
+        { 
+            backIcons.HideUi(); 
+            limitPopUp.DisableElement(); 
+        }
 
         initiations[currentScene]();
     }
@@ -73,6 +81,15 @@ public class ScenesManagment : MonoBehaviour
 
         print("Creation Scene");
     }
+    private void Scene4()
+    {
+        if (DespesaUI.current.edited)
+            DespesaUI.current.SairEdicao();
+
+        DespesaUI.current.InitReportScene();
+
+        print("Report Scene");
+    }
     public void EditScene()
     {
         icons[1].ClickFunction();
@@ -85,15 +102,6 @@ public class ScenesManagment : MonoBehaviour
         addBt.SetActive(true);
         makeChangeEditBt.SetActive(false);
         leaveEditBt.SetActive(false);
-    }
-    private void Scene4()
-    {
-        if (DespesaUI.current.edited)
-            DespesaUI.current.SairEdicao();
-
-        DespesaUI.current.InitReportScene();
-
-        print("Report Scene");
     }
     #endregion
 
