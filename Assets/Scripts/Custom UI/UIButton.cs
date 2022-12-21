@@ -77,7 +77,7 @@ public abstract class UIButton : UIElement
     internal async void ChangeHighlights()
     {
         OthersHighlights();
-        if (toggle)
+        if (temporarilyHighlight)
         {
             if (Keyboard.fixedUpper) return;
 
@@ -87,7 +87,7 @@ public abstract class UIButton : UIElement
             if (m_TokenSource.IsCancellationRequested) return;
             DisabledHighlight();
         }
-        else
+        else if(toggle)
         {
             if (highlightEnabled)
             {

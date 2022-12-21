@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -39,6 +40,8 @@ public class Despesa : MonoBehaviour
 
     public static Despesa current;
 
+    [SerializeField] TextMeshProUGUI date;
+
     private void Awake()
     {
         current = this;
@@ -47,7 +50,8 @@ public class Despesa : MonoBehaviour
     }
     public void Initialize()
     {
-        currentMonth = DateTime.Now.Month;
+        currentMonth = DateTime.UtcNow.Month;
+        date.text = $"{DateTime.UtcNow.ToLocalTime().ToShortDateString()}";
 
         if (Salvar.CarregarDados())
         {
@@ -151,24 +155,41 @@ public class Despesa : MonoBehaviour
     #region Calculation
     public float[] CalculateExpenseUntill(int amountMonths, int month, int year)
     {
-        if (IsItemListNull()) return new float[] {0,0,0};
+        if (IsItemListNull()) return new float[] { 0, 0, 0 };
 
+        #region Variables
         float gastoDinheiroAcumulado = 0, gastoDinheiroNoMes = 0;
         float gastoCartaoAcumulado = 0, gastoCartaoNoMes = 0;
-        float extra = 0, gastoMensal;
+        float extra = 0, gastoMensal = 0;
         float sobra = initMoney;
         bool noMoney = false;
+        #endregion
 
-        //Calculo do gasto Acumulativo
-        for(int i = 0; i <= amountMonths; i++)
+        Acumulative(amountMonths, ref gastoDinheiroAcumulado, ref gastoCartaoAcumulado, ref extra, ref gastoMensal, ref sobra, ref noMoney);
+        if (noMoney) return new float[] { 0, 0, 0 };
+
+        gastoMensal = 0;
+        extra = 0;
+        SpecificMonth(month, year, ref gastoDinheiroNoMes, ref gastoCartaoNoMes, ref extra, ref gastoMensal);
+
+        float[] results = new float[3];
+        results[0] = gastoCartaoAcumulado + gastoDinheiroAcumulado;
+        results[1] = gastoCartaoNoMes + gastoDinheiroNoMes;
+        results[2] = sobra * fees;
+        return results;
+    }
+
+    private void Acumulative(int amountMonths, ref float gastoDinheiroAcumulado, ref float gastoCartaoAcumulado, ref float extra, ref float gastoMensal, ref float sobra, ref bool noMoney)
+    {
+        for (int i = 0; i <= amountMonths; i++)
         {
             gastoMensal = 0;
 
-            foreach(Item item in ItemsList)
-                CostPerItemForAcumulative(ref extra, ref gastoDinheiroAcumulado, ref gastoCartaoAcumulado, ref gastoMensal, i, item);
+            foreach (Item item in ItemsList)
+                CostPerItem(ref extra, ref gastoDinheiroAcumulado, ref gastoCartaoAcumulado, ref gastoMensal, currentMonth + i, DateTime.UtcNow.ToLocalTime().Year, item);
             sobra += (extra + incomePerMonth - gastoMensal) * fees;
 
-            if(sobra < 0)
+            if (sobra < 0)
             {
                 print(sobra);
                 DespesaUI.current.ShowWarning(DespesaUI.ERRO_MONTH_MONEY);
@@ -176,50 +197,34 @@ public class Despesa : MonoBehaviour
                 break;
             }
         }
-        if (noMoney) return new float[] {0,0,0};
-
-        gastoMensal = 0;
-        extra = 0;
+    }
+    private void SpecificMonth(int month, int year, ref float gastoDinheiroNoMes, ref float gastoCartaoNoMes, ref float extra, ref float gastoMensal)
+    {
         foreach (Item item in ItemsList)
         {
-            DespesaUI.current.InstantiateItemsForReport(item);
-            CostPerItemInSpecificMonth(ref extra, ref gastoDinheiroNoMes, ref gastoCartaoNoMes, ref gastoMensal, month, year, item);
+            var diff = gastoMensal;
+            CostPerItem(ref extra, ref gastoDinheiroNoMes, ref gastoCartaoNoMes, ref gastoMensal, month, year, item);
+
+            diff -= gastoMensal;
+            if (diff != 0) DespesaUI.current.InstantiateItemsForReport(item);
         }
-
-        float[] results = new float[3];
-        results[0] = gastoCartaoAcumulado + gastoDinheiroAcumulado;
-        results[1] = gastoCartaoNoMes + gastoDinheiroNoMes;
-        results[2] = sobra * fees;
-        //print($"Gasto Acumulado: {}");          //Gasto Acumulado
-        //print($"Gasto Mensal: {}");             //Gasto no mes
-        //print($"Sobra Mensal: {}");             //Sobra no mes
-        return results;
     }
-    public void CalculateTotalExpenses()
+    private void CostPerItem(ref float extra, ref float gastoDinheiro, ref float gastoCartao, ref float gastoMensal,int month, int year, Item item)
     {
-        if (IsItemListNull()) return;
-
-        float extra = 0;
-        moneySaved = initMoney;
-
-        for (int i = 0; i <= amountMonths; i++)
+        if(month > 12)
         {
-            float gastoMensal = 0;
-
-            foreach (Item item in ItemsList) 
-                CostPerItemForAcumulative(ref extra, ref moneyExpense, ref cardExpense,ref gastoMensal, i, item);
-            moneySaved += (extra + incomePerMonth - gastoMensal);
+            year += Mathf.FloorToInt(month / 12);
+            month = month % 12;
         }
 
-        totalExpense = cardExpense + moneyExpense;
-        DespesaUI.current.ChangeTextOfCalculationScene2(totalExpense, moneySaved);
-    }
-    private void CostPerItemForAcumulative(ref float extra, ref float gastoDinheiro, ref float gastoCartao, ref float gastoMensal, int i, Item item)
-    {
+        if (item.getInitMonth() > month && item.getInitYear() == year
+            || item.getInitYear() > year
+            || item.getLastYear() < year
+            || item.getLastMonth() < month && item.getLastYear() == year) return;
+
         switch (item.getType())
         {
             case Item.TipoItem.DESPESA:
-                if (currentMonth + i >= item.getInitMonth() && item.getParcels() >= i + 1)
                 {
                     if (item.getUseCreditCard())
                     {
@@ -231,38 +236,30 @@ public class Despesa : MonoBehaviour
                 }
                 break;
             case Item.TipoItem.EXTRA:
-                if(currentMonth + i == item.getInitMonth() && !item.getExtraAdded())
-                {
-                    extra += item.getMonthlyPrice();
-                }
+                extra += item.getMonthlyPrice();
                 break;
         }
     }
-    private void CostPerItemInSpecificMonth(ref float extra, ref float gastoDinheiro, ref float gastoCartao, ref float gastoMensal, int month, int year, Item item)
+
+
+    public void CalculateTotalExpenses()
     {
-        switch (item.getType())
+        if (IsItemListNull()) return;
+
+        float extra = 0;
+        moneySaved = initMoney;
+
+        for (int i = 0; i <= amountMonths; i++)
         {
-            case Item.TipoItem.DESPESA:
-                if (item.getInitMonth() > month && item.getInitYear() > year || item.getLastMonth() < month && item.getLastYear() < year) break;
-                
-                if (item.getUseCreditCard())
-                {
-                    gastoCartao += item.getMonthlyPrice();
-                    //if (!item.getIsMonthly()) currentLimit += item.getMonthlyPrice();
-                }
-                else gastoDinheiro += item.getMonthlyPrice();
-                gastoMensal += item.getMonthlyPrice();
-                break;
-            case Item.TipoItem.EXTRA:
-                if (item.getInitMonth() >= month && item.getInitYear() >= year || item.getLastMonth() <= month && item.getLastYear() <= year) break;
-                
-                if (!item.getExtraAdded())
-                {
-                    extra += item.getMonthlyPrice();
-                    item.setExtraAdded(true);
-                }
-                break;
+            float gastoMensal = 0;
+
+            foreach (Item item in ItemsList)
+                CostPerItem(ref extra, ref moneyExpense, ref cardExpense, ref gastoMensal, currentMonth + i, DateTime.UtcNow.ToLocalTime().Year, item);
+            moneySaved += (extra + incomePerMonth - gastoMensal);
         }
+
+        totalExpense = cardExpense + moneyExpense;
+        DespesaUI.current.ChangeTextOfCalculationScene2(totalExpense, moneySaved);
     }
 
     private float LimitInitialization(float prevLimit)

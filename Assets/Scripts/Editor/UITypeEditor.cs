@@ -41,6 +41,7 @@ public class UITypeEditor : Editor
 
                 CustomUIBase.Div(5);
 
+                EditorGUILayout.PropertyField(so.FindProperty("startOnAwake"));
                 string[] variables = new string[] { "labelComponent", "labelText" };
                 string[] names = new string[] { "", "" };
                 CustomUIBase.PartOfSomeVariablesRelated(so, true, "hasLabel", variables, names, 275, 100);

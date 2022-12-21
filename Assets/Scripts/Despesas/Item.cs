@@ -60,26 +60,21 @@ public class Item
 
         this.parcels = parcels;
 
+        this.initMonth = initMonth;
         if (initMonth < Despesa.current.getCurrentMonth())
-        {
-            this.initMonth = Despesa.current.getCurrentMonth() + (12 - Despesa.current.getCurrentMonth()) + initMonth;
             year = DateTime.Now.Year + 1;
-        }
         else
-        {
-            this.initMonth = initMonth;
             year = DateTime.Now.Year;
-        }
 
         if (initMonth + parcels > 12)
         {
-            lastMonth = initMonth + (parcels % 12);
+            lastMonth = initMonth + (parcels % 12) - 1;
             while(lastMonth > 12)
             {
                 lastMonth = (lastMonth % 12);
             }
         }
-        else lastMonth = initMonth + parcels;
+        else lastMonth = initMonth + parcels - 1;
 
         lastYear = (int)Mathf.Floor(parcels / 12) + year;
     }

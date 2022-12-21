@@ -12,8 +12,9 @@ using static Enums;
 public class DespesaUI : MonoBehaviour
 {
     #region Aux Variables
-    public bool edited;
     public int monthsAvailables;
+    public bool edited;
+    private bool showingLimitPopUp, isReportScene;
     private CancellationTokenSource tokenSource;
 
     #region Consts
@@ -217,7 +218,8 @@ public class DespesaUI : MonoBehaviour
     }
     public void Initialize()
     { 
-        paginaRelatorio = 1;
+        paginaRelatorio = 0;
+        monthsAvailables = 0;
 
         creation_tgInitMonth[reportMonth - 1].isOn = true;
     }
@@ -229,8 +231,18 @@ public class DespesaUI : MonoBehaviour
     }
     public void CurrentLimitTextPopUp()
     {
+        showingLimitPopUp = !showingLimitPopUp;
         currentLimitPopUp.text = currentLimit.MoneyFormatForNumber();
+
+        UpdateLimitPopUpOnReport();
     }
+    private void UpdateLimitPopUpOnReport()
+    {
+        if (!isReportScene) return;
+        float current = currentLimit;
+        currentLimitPopUp.text = (current + float.Parse(monthlyCostTotal.text.Substring(2))).MoneyFormatForNumber();
+    }
+
 
     #region Function for Input
     public void UpdateInputsFromScene2(float _limit, float currentLimit, float _income, float _initMoney, float _fees)
@@ -298,16 +310,29 @@ public class DespesaUI : MonoBehaviour
     public void CreationItem()
     {
         Item item = CreateItem();
-        if(item == null)
+        if (item == null)
             return;
 
         Despesa.current.AddToList(item);
 
-        monthsAvailables = item.getParcels() > monthsAvailables ? item.getParcels() : monthsAvailables;
+        UpdateReportMonthsRange(item.getInitMonth(), item.getParcels());
+
         ShowWarning(SUCESSO);
-        
+
         ResetInputValuesFromScene3();
     }
+    private void UpdateReportMonthsRange(int month, int parcels)
+    {
+        if (parcels > monthsAvailables)
+        {
+            if (month < Despesa.current.getCurrentMonth())
+                monthsAvailables = (12 + parcels - Despesa.current.getCurrentMonth());
+            else
+                monthsAvailables = parcels;
+        }
+    }
+
+
     private Item CreateItem()
     {
         if (!IsItemInfoCorrect())
@@ -453,6 +478,11 @@ public class DespesaUI : MonoBehaviour
     #region Report
     public void InitReportScene()
     {
+        isReportScene = true;
+        
+        setaAnt.Init();
+        setaProx.Init();
+
         setaAnt.getPageParams().maxPages = monthsAvailables;
         setaProx.getPageParams().maxPages = monthsAvailables;
 
@@ -461,7 +491,11 @@ public class DespesaUI : MonoBehaviour
 
         SetMonthlyPage();
     }
-    public void SetMonthlyPage()
+    public void LeaveReportScene()
+    {
+        isReportScene = false;
+    }
+    private void SetMonthlyPage()
     {
         var results = MonthReport();
 
@@ -471,13 +505,15 @@ public class DespesaUI : MonoBehaviour
         monthlyCost.text = results[1] > 0 ? results[1].ToString("F2").MoneyFormatForString() : "R$ 000,00";
         monthlySaved.text = results[2] > 0 ? results[2].ToString("F2").MoneyFormatForString() : "R$ 000,00";
         scrollRect.verticalScrollbar.value = 1;
+
+        if (showingLimitPopUp) UpdateLimitPopUpOnReport();
     }
     private float[] MonthReport()
     {
         parentReports.DeleteChildren();
 
         float[] values;
-        values = Despesa.current.CalculateExpenseUntill(paginaRelatorio-1, reportMonth, reportYear);
+        values = Despesa.current.CalculateExpenseUntill(paginaRelatorio, reportMonth, reportYear);
 
         return values;
     }
@@ -511,6 +547,7 @@ public class DespesaUI : MonoBehaviour
 
         SetMonthlyPage();
     }
+    
     public void ShowExtraInfo(Vector3 position, int month, bool credit, bool isTest, bool isMonthly)
     {
         var percentX = position.x / Screen.width;

@@ -5,12 +5,9 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 public class ScenesManagment : MonoBehaviour
-{
-    private delegate void scenesInit();
-    private Dictionary<int, scenesInit> initiations;
-    public int sceneTest;
-
+{ 
     int currentScene;
+    public int sceneTest;
     public GameObject leaveEditBt, makeChangeEditBt, addBt;
     [SerializeField] UIElement[] scenes;
     [SerializeField] UIType[] icons;
@@ -29,7 +26,6 @@ public class ScenesManagment : MonoBehaviour
 
     private void Awake()
     {
-        initiations = new Dictionary<int, scenesInit>() { {1, Scene1 },{2, Scene2 },{3, Scene3 },{4, Scene4 } };
 
         if(currentScene != 1)
         {
@@ -49,7 +45,10 @@ public class ScenesManagment : MonoBehaviour
         if (scenes[index - 1].hasAnimator()) UseAnimator(index);
         else ManualProcess(index);
 
+        LeaveScene(index);
         currentScene = index;
+        EnterScene(currentScene);
+
         if (currentScene != 1 && backIcons.getCanvasGroup().alpha != 1) 
         { 
             backIcons.ShowUi();
@@ -60,35 +59,53 @@ public class ScenesManagment : MonoBehaviour
             backIcons.HideUi(); 
             limitPopUp.DisableElement(); 
         }
-
-        initiations[currentScene]();
     }
 
     #region Scenes Initiations
-    private void Scene1()
+    private void EnterScene(int scene)
     {
-        print("Entry Scene");
+        switch (scene)
+        {
+            case 1:
+                print("Entry Scene");
+                break;
+            case 2:
+                {
+                    if (DespesaUI.current.edited)
+                        DespesaUI.current.SairEdicao();
+
+                    print("Main Scene");
+                }
+                break;
+            case 3:
+                print("Creation Scene");
+                break;
+            case 4:
+                {
+                    if (DespesaUI.current.edited)
+                        DespesaUI.current.SairEdicao();
+
+                    DespesaUI.current.InitReportScene();
+
+                    print("Report Scene");
+                }
+                break;
+        }
     }
-    private void Scene2()
+    private void LeaveScene(int scene)
     {
-        if (DespesaUI.current.edited)
-            DespesaUI.current.SairEdicao();
-
-        print("Main Scene");
-    }
-    private void Scene3()
-    {
-
-        print("Creation Scene");
-    }
-    private void Scene4()
-    {
-        if (DespesaUI.current.edited)
-            DespesaUI.current.SairEdicao();
-
-        DespesaUI.current.InitReportScene();
-
-        print("Report Scene");
+        switch (scene)
+        {
+            case 1:
+                break;
+            case 2:
+                break; 
+            case 3:
+                break;
+            case 4:
+                DespesaUI.current.LeaveReportScene();
+                break;
+        }
     }
     public void EditScene()
     {

@@ -43,6 +43,7 @@ public class UITextInputEditor : Editor
 
                 CustomUIBase.Div(5);
 
+                EditorGUILayout.PropertyField(soUiInput.FindProperty("startOnAwake"));
                 EditorGUILayout.PropertyField(soUiInput.FindProperty("hasLabel"));
                 useLabel = soUiInput.FindProperty("hasLabel").boolValue;
                 if (useLabel)

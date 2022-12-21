@@ -21,7 +21,7 @@ public class UIElement : MonoBehaviour
     [SerializeField] protected float scaleSize;
     [SerializeField] protected bool selected, scale, scaleOnHover, scaleOnClick;
 
-    [SerializeField] protected bool _interactable = true;
+    [SerializeField] protected bool _interactable = true, startOnAwake = true;
     [SerializeField] protected bool interactable
     {
         get => _interactable;
@@ -33,7 +33,7 @@ public class UIElement : MonoBehaviour
 
     void Awake()
     {
-        Init();
+        if (startOnAwake) Init();
     }
 
     private void OnEnable()
@@ -47,9 +47,9 @@ public class UIElement : MonoBehaviour
         canvasGroup = GetComponent<CanvasGroup>();
         rect = GetComponent<RectTransform>();
         m_hasAnimator = animator ?? false;
-        start = true;
 
         gameObject.tag = "UI Element";
+        start = true;
     }
 
     #region Get and Set

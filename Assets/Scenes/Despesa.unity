@@ -938,6 +938,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 0
   toggle: 0
@@ -1305,6 +1306,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 0
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 0
 --- !u!1 &76206637
@@ -2060,6 +2062,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 1
   type: 1
@@ -2732,6 +2735,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects:
   - {fileID: 1701226770}
   - {fileID: 1198360576}
@@ -3769,6 +3773,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects:
   - {fileID: 1701226770}
   - {fileID: 1198360576}
@@ -3935,8 +3940,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 109106057d8a6ad459fa1d943653e4e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  edited: 0
   monthsAvailables: 0
+  edited: 0
   currentLimitPopUp: {fileID: 2140115906}
   inputLimit: {fileID: 1229003099997614018}
   inputIncome: {fileID: 1229003100344998405}
@@ -4203,6 +4208,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 1
   type: 2
@@ -4886,6 +4892,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 0
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 0
 --- !u!1 &356116240
@@ -5849,6 +5856,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 1
   type: 0
@@ -5995,6 +6003,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   idAvaliables: 
   editar: {fileID: 0}
+  date: {fileID: 1776144240}
 --- !u!4 &474729485
 Transform:
   m_ObjectHideFlags: 0
@@ -6923,6 +6932,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects:
   - {fileID: 1701226770}
   - {fileID: 1198360576}
@@ -7476,6 +7486,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 0
   linkedObjects:
   - {fileID: 1974355574}
   showVariables: 0
@@ -8523,6 +8534,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 0
   toggle: 0
@@ -8919,6 +8931,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 0
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 0
 --- !u!1 &656715000
@@ -9177,6 +9190,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 0
   linkedObjects: []
   showVariables: 0
   toggle: 0
@@ -10270,6 +10284,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 0
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 0
 --- !u!1 &709071087
@@ -12045,6 +12060,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 1
   toggle: 0
@@ -15551,6 +15567,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects:
   - {fileID: 3061112312315514668}
   showVariables: 1
@@ -15999,6 +16016,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 0
   toggle: 0
@@ -17600,6 +17618,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects:
   - {fileID: 1701226770}
   - {fileID: 1198360576}
@@ -19416,6 +19435,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 1
   type: 1
@@ -20321,6 +20341,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 0
   toggle: 0
@@ -20914,6 +20935,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 1
   toggle: 0
@@ -20980,7 +21002,6 @@ GameObject:
   - component: {fileID: 1408500426}
   - component: {fileID: 1408500430}
   - component: {fileID: 1408500431}
-  - component: {fileID: 1408500432}
   - component: {fileID: 1408500433}
   m_Layer: 5
   m_Name: Button
@@ -21098,6 +21119,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 1
   toggle: 0
@@ -21124,50 +21146,6 @@ MonoBehaviour:
     max: 0
     min: 0
   clickEvent:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &1408500432
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1408500424}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 0
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 1408500428}
-  m_OnClick:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 937434850}
@@ -22140,6 +22118,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 0
+  startOnAwake: 0
   linkedObjects: []
   showVariables: 0
 --- !u!95 &1463802178
@@ -23492,6 +23471,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 0
   toggle: 0
@@ -23532,13 +23512,13 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 301495676}
-        m_TargetAssemblyTypeName: UIElement, Assembly-CSharp
-        m_MethodName: 
+      - m_Target: {fileID: 301495677}
+        m_TargetAssemblyTypeName: DespesaUI, Assembly-CSharp
+        m_MethodName: CurrentLimitTextPopUp
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -24608,6 +24588,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 0
+  startOnAwake: 0
   linkedObjects: []
   showVariables: 0
 --- !u!95 &1633477564
@@ -24947,6 +24928,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 1
+  startOnAwake: 0
   linkedObjects: []
   showVariables: 0
 --- !u!95 &1658452600
@@ -25570,6 +25552,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 0
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 0
 --- !u!1 &1701226770
@@ -26183,12 +26166,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 90
+  m_fontSize: 100
   m_fontSizeBase: 90
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_fontSizeMax: 100
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -28165,6 +28148,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 0
 --- !u!225 &1869235581
@@ -29836,6 +29820,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 0
   linkedObjects:
   - {fileID: 575416887}
   showVariables: 0
@@ -33063,6 +33048,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 1
   type: 0
@@ -33526,6 +33512,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 1
   type: 1
@@ -33776,6 +33763,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 1
+  startOnAwake: 1
   linkedObjects:
   - {fileID: 165971043}
   - {fileID: 1229003099893866484}
@@ -33987,6 +33975,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 1
   type: 1
@@ -35791,6 +35780,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects:
   - {fileID: 1095373368}
   showVariables: 1
@@ -36111,6 +36101,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects:
   - {fileID: 1701226770}
   - {fileID: 1198360576}
@@ -36518,6 +36509,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 0
   toggle: 0
@@ -36629,6 +36621,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 1
   _interactable: 1
+  startOnAwake: 1
   linkedObjects: []
   showVariables: 0
   toggle: 0
@@ -37893,6 +37886,7 @@ MonoBehaviour:
   scaleOnHover: 0
   scaleOnClick: 0
   _interactable: 1
+  startOnAwake: 0
   linkedObjects: []
   showVariables: 1
   type: 2
